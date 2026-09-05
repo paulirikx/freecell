@@ -20,10 +20,12 @@ var BESTANDEN = [
 ];
 
 self.addEventListener('install', function (e) {
-  // Bewust geen skipWaiting: de nieuwe versie blijft klaarstaan tot de speler
-  // in de melding op "Nu vernieuwen" tikt. Anders wisselen de bestanden
-  // midden in een potje.
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(BESTANDEN); }));
+  // Wel skipWaiting: anders blijft iemand met een oude versie in de cache daar
+  // hangen tot hij alle tabbladen sluit -- en juist die oude versie kent de
+  // melding "nieuwe versie" nog niet. De draaiende pagina merkt hier niets
+  // van; die blijft op zijn eigen bestanden tot je vernieuwt.
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(BESTANDEN); })
+    .then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('message', function (e) {

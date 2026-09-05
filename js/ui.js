@@ -1202,6 +1202,17 @@
     });
   }
 
+  /* Ook zonder service-worker-signaal kijken we bij het opstarten of de
+     bestanden op de server nieuwer zijn dan de code die nu draait. Dat vangt
+     het geval waarin iemand nog een oude versie uit zijn cache draait. */
+  if (!window.Capacitor && location.protocol.indexOf('http') === 0) {
+    setTimeout(function () {
+      fetch('versie.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); })
+        .then(function (v) { if (v && v.versie && v.versie !== Store.VERSION) toonUpdate(v.versie, v.nieuws); })
+        .catch(function () {});
+    }, 2500);
+  }
+
   /* In de Android-app kan de app zichzelf niet vernieuwen; daar kijken we of er
      een nieuwere APK op de site staat. Zonder internet gebeurt er niets. */
   if (window.Capacitor) {

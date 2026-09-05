@@ -4,6 +4,11 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.3.1 — 5 september 2026
+
+- Het spel controleert bij het opstarten zelf of er een nieuwere versie op de
+  site staat, ook als de browser nog oude bestanden bewaart.
+
 ## 1.3.0 — 5 september 2026
 
 - Samen spelen: maak een club, deel de code of de uitnodigingslink, en iedereen
