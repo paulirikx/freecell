@@ -4,6 +4,13 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.4.0 — 5 september 2026
+
+- Het logo van grAItt Studio staat onderaan de pagina en in het
+  instellingenscherm.
+- Op de downloadpagina staat hoeveel verschillende mensen de app al hebben
+  opgehaald.
+
 ## 1.3.1 — 5 september 2026
 
 - Het spel controleert bij het opstarten zelf of er een nieuwere versie op de

@@ -65,8 +65,16 @@
   .niv{background:rgba(255,255,255,.07);border-radius:13px;padding:11px 13px}
   .niv b{display:block;margin-bottom:2px}
   .niv small{opacity:.7;font-size:12.5px}
-  footer{text-align:center;margin-top:24px;font-size:13px;opacity:.7}
+  footer{text-align:center;margin-top:30px;font-size:13px}
   footer a{color:#8fe3b3}
+  .maker{display:inline-flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#fff;
+    opacity:.88;padding:12px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(0,0,0,.22)}
+  .maker img{width:132px;height:auto;display:block}
+  .maker span{font-size:12.5px;opacity:.8}
+  .maker b{font-weight:700}
+  .teller{font-size:12.5px;opacity:.75;margin:8px 0 0;text-align:center}
+  .teller b{font-size:15px}
 </style>
 </head>
 <body>
@@ -182,9 +190,10 @@
     <h2>Op je telefoon <span class="gratis">gratis</span></h2>
     <p>De Android-app is hetzelfde spel, maar dan zonder browser en zonder internet. Geen advertenties, geen account,
       geen aankopen. Je tijden blijven op je eigen telefoon.</p>
-    <a class="btn primary" href="FreeCell.apk" download style="display:block;margin:12px 0 4px">
+    <a class="btn primary" id="apk-knop" href="FreeCell.apk" download style="display:block;margin:12px 0 4px">
       Download FreeCell voor Android <small style="opacity:.8;font-weight:400">(versie {{versie}})</small>
     </a>
+    <p class="teller" id="teller" hidden></p>
     <h2 style="margin-top:16px;font-size:16px">Installeren, stap voor stap</h2>
     <ol>
       <li>Tik op de knop hierboven. Je browser waarschuwt dat dit soort bestanden schade kan aanrichten — kies
@@ -204,8 +213,12 @@
   </div>
 
   <footer>
-    Gemaakt voor thuis, en voor iedereen die denkt dat hij sneller is. <br>
-    <a href="spelen/">Naar het spel →</a>
+    <p class="fine" style="margin-bottom:14px">Gemaakt voor thuis, en voor iedereen die denkt dat hij sneller is.<br>
+      <a href="spelen/">Naar het spel →</a></p>
+    <a class="maker" href="https://graittstudio.com" target="_blank" rel="noopener">
+      <img src="assets/graitt-logo.png" alt="grAItt Studio">
+      <span>gemaakt door <b>grAItt Studio</b></span>
+    </a>
   </footer>
 </div>
 <style>#foto.weg{display:none}</style>
@@ -228,6 +241,33 @@
     w.insertBefore(kop, w.querySelector('h1').nextSibling);
     document.querySelectorAll('a.btn[href="spelen/"]').forEach(function (a) { a.href = 'spelen/?club=' + uit; });
   }
+
+  /* Downloadteller: telt verschillende apparaten, niet het aantal kliks.
+     Er wordt alleen een willekeurig nummer bewaard, verder niets. */
+  var TEL_URL = 'https://uiiydsfkwanrtkaxpnei.supabase.co/rest/v1/rpc/';
+  var TEL_KEY = 'sb_publishable_u3jqsU62TJdQ27RY3KM6ZQ_s9npAlrl';
+  function telRpc(naam, body) {
+    return fetch(TEL_URL + naam, {
+      method: 'POST', headers: { apikey: TEL_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function (r) { return r.json(); });
+  }
+  function toonTeller(n) {
+    if (typeof n !== 'number' || n < 1) return;
+    var el = document.getElementById('teller');
+    el.hidden = false;
+    el.innerHTML = n === 1 ? 'Eén iemand heeft de app al opgehaald.'
+      : '<b>' + n + '</b> mensen hebben de app al opgehaald.';
+  }
+  telRpc('download_aantal').then(toonTeller).catch(function () {});
+  document.getElementById('apk-knop').addEventListener('click', function () {
+    var id = '';
+    try {
+      id = localStorage.getItem('fc.apparaat') || '';
+      if (!id) { id = 'a' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); localStorage.setItem('fc.apparaat', id); }
+    } catch (e) { id = 'a' + Math.random().toString(36).slice(2, 12); }
+    telRpc('download_tel', { p_id: id }).then(toonTeller).catch(function () {});
+  });
 
   var instellingen = {};
   try { instellingen = JSON.parse(localStorage.getItem('fc.settings') || '{}') || {}; } catch (e) {}

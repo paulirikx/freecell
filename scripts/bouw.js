@@ -28,6 +28,7 @@ const LANDING = ['icons'];
 /* Alleen het plaatje van de landingspagina mee - assets/ bevat verder de
    bronafbeeldingen voor de app-iconen, die hoeven niet online. */
 const FOTO = 'assets/agent-freecell.jpg';
+const LOGO = 'assets/graitt-logo.png';
 
 const leeg = (map) => { fs.rmSync(map, { recursive: true, force: true }); fs.mkdirSync(map, { recursive: true }); };
 
@@ -87,6 +88,10 @@ fs.writeFileSync(path.join(www, 'versie.json'), JSON.stringify(versieInfo(), nul
 function web(doel) {
   leeg(doel);
   kopieer(doel, LANDING);
+  if (fs.existsSync(path.join(wortel, LOGO))) {
+    fs.mkdirSync(path.join(doel, 'assets'), { recursive: true });
+    fs.copyFileSync(path.join(wortel, LOGO), path.join(doel, LOGO));
+  }
   if (fs.existsSync(path.join(wortel, FOTO))) {
     fs.mkdirSync(path.join(doel, 'assets'), { recursive: true });
     fs.copyFileSync(path.join(wortel, FOTO), path.join(doel, FOTO));

@@ -296,3 +296,10 @@ body.licht .online{color:#0d6438}
 .stip{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:5px;
   box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:klop 2s infinite}
 @keyframes klop{70%{box-shadow:0 0 0 7px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+/* maker onderin het instellingenscherm */
+.maker{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:var(--tekst);
+  margin-top:14px;padding:12px;border-radius:16px;background:var(--paneel2);opacity:.92}
+.maker img{width:118px;height:auto;display:block}
+.maker span{font-size:12px;opacity:.75}
+.maker b{font-weight:700}
