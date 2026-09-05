@@ -1,9 +1,39 @@
+/* ---------- thema ----------
+   Donker is de standaard. Licht wisselt alleen de "chrome" om: panelen,
+   knoppen en tekst. De kaarten blijven hetzelfde, de speeltafel krijgt per
+   achtergrond een lichte variant (zie hieronder). */
+:root{
+  --tekst:#fff;
+  --paneel:#1b2330;
+  --paneel2:#0f151f;
+  --paneel3:#2a3342;
+  --rand:rgba(255,255,255,.2);
+  --rand2:rgba(255,255,255,.3);
+  --chrome:rgba(0,0,0,.35);
+  --chrome-rand:rgba(255,255,255,.28);
+  --groen:#28a35f;
+  --groen-rand:#57e194;
+  --geel:#ffd54a;
+  --schaduw:0 20px 60px rgba(0,0,0,.6);
+}
+body.licht{
+  --tekst:#151a22;
+  --paneel:#fff;
+  --paneel2:#f1f4f9;
+  --paneel3:#e6eaf2;
+  --rand:rgba(0,0,0,.16);
+  --rand2:rgba(0,0,0,.26);
+  --chrome:rgba(255,255,255,.66);
+  --chrome-rand:rgba(0,0,0,.16);
+  --schaduw:0 20px 50px rgba(0,0,0,.28);
+}
+
 /* ---------- basis ---------- */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;overflow:hidden}
 body{
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  color:#fff;background:#0b5c34;
+  color:var(--tekst);background:#0b5c34;
   user-select:none;-webkit-user-select:none;touch-action:manipulation;
 }
 #app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
@@ -23,14 +53,14 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
 #topbar .stat{text-align:center;line-height:1.05;flex:1}
 #topbar .lbl{display:block;font-size:13px;opacity:.85;letter-spacing:.3px}
 #topbar .val{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-.round{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.55);
-  background:rgba(0,0,0,.35);color:#ffd85e;font-size:20px;line-height:1;cursor:pointer;flex:0 0 auto}
+.round{width:42px;height:42px;border-radius:50%;border:2px solid var(--chrome-rand);
+  background:var(--chrome);color:#e0a92b;font-size:20px;line-height:1;cursor:pointer;flex:0 0 auto}
 .round:active{transform:scale(.94)}
 #topbar .val.warn{color:#ffb4b4}
 
 #subbar{display:flex;gap:6px;padding:4px 10px 6px;overflow-x:auto;scrollbar-width:none}
 #subbar::-webkit-scrollbar{display:none}
-.pill{flex:0 0 auto;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.28);color:#fff;
+.pill{flex:0 0 auto;border:1px solid var(--chrome-rand);background:var(--chrome);color:var(--tekst);
   border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;font-family:inherit}
 .pill.ghost{opacity:.75;cursor:default}
 .pill.up{background:#1f7a45;border-color:#48d68b}
@@ -61,19 +91,19 @@ body.lefty #topzone>*{direction:ltr}
 
 /* ---------- kaarten ---------- */
 .card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.09);
-  background:#fdfbf5;color:#111;box-shadow:0 1px 2px rgba(0,0,0,.45);cursor:pointer;overflow:hidden;
-  border:1px solid rgba(0,0,0,.35)}
-.card .idx{position:absolute;left:6%;top:2%;line-height:1;text-align:center;font-weight:800;
-  font-size:calc(var(--cw)*.33);letter-spacing:-.5px}
-.card .idx .s{display:block;font-size:calc(var(--cw)*.27);margin-top:calc(var(--cw)*-.01)}
+  background:#fffdf6;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.5);cursor:pointer;overflow:hidden;
+  border:1px solid rgba(0,0,0,.45)}
+.card .idx{position:absolute;left:6%;top:1%;line-height:1;text-align:center;font-weight:800;
+  font-size:calc(var(--cw)*.42);letter-spacing:-.6px}
+.card .idx .s{display:block;font-size:calc(var(--cw)*.33);margin-top:calc(var(--cw)*-.03)}
 .card .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--cw)*.22);line-height:1}
 .card .pip.rev{transform:translate(-50%,-50%) rotate(180deg)}
-.card .big{position:absolute;left:52%;top:60%;transform:translate(-50%,-50%);font-size:calc(var(--cw)*.62);line-height:1}
+.card .big{position:absolute;left:54%;top:62%;transform:translate(-50%,-50%);font-size:calc(var(--cw)*.7);line-height:1}
 .card .court{position:absolute;left:54%;top:58%;transform:translate(-50%,-50%);text-align:center;
   font-size:calc(var(--cw)*.3);line-height:1.05}
 .card .court b{display:block;font-size:calc(var(--cw)*.46)}
-.card.red{color:#c2172c}
-.card.black{color:#14161c}
+.card.red{color:#d1091f}
+.card.black{color:#0c0e13}
 .card.dragging{opacity:.28}
 .card.moving{z-index:900!important}
 .card.hintFrom{outline:3px solid #7ce0ff;outline-offset:-3px}
@@ -88,9 +118,9 @@ body.narrow.deck-pips .card .pip{display:none}
 body.narrow.deck-pips .card .big{display:block}
 body.deck-four .card.s2{color:#1560c9}
 body.deck-four .card.s3{color:#0b8a45}
-body.deck-big .card .idx{font-size:calc(var(--cw)*.44);left:7%}
-body.deck-big .card .idx .s{font-size:calc(var(--cw)*.34)}
-body.deck-big .card .big{font-size:calc(var(--cw)*.72);top:64%}
+body.deck-big .card .idx{font-size:calc(var(--cw)*.52);left:7%}
+body.deck-big .card .idx .s{font-size:calc(var(--cw)*.4)}
+body.deck-big .card .big{font-size:calc(var(--cw)*.78);top:66%}
 body.deck-night .card{background:#1d222c;border-color:#000}
 body.deck-night .card.black{color:#e8ecf5}
 body.deck-night .card.red{color:#ff5f77}
@@ -101,8 +131,8 @@ body.deck-night .card.red{color:#ff5f77}
 
 /* ---------- onderbalk ---------- */
 #bottombar{display:flex;justify-content:space-around;align-items:center;gap:4px;margin:6px 8px;
-  padding:6px 4px;border-radius:16px;background:rgba(0,0,0,.35)}
-.tool{position:relative;flex:1;border:0;background:none;color:#fff;font-size:11.5px;cursor:pointer;
+  padding:6px 4px;border-radius:16px;background:var(--chrome)}
+.tool{position:relative;flex:1;border:0;background:none;color:var(--tekst);font-size:11.5px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;border-radius:12px;font-family:inherit}
 .tool .ico{font-size:21px;line-height:1}
 .tool:disabled{opacity:.35}
@@ -115,32 +145,32 @@ body.deck-night .card.red{color:#ff5f77}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;
   padding:14px;z-index:1200}
 .overlay.on{display:flex}
-.sheet{width:100%;max-width:430px;max-height:88vh;overflow:auto;background:#1b2330;border:1px solid rgba(255,255,255,.14);
-  border-radius:18px;padding:16px 16px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.sheet{width:100%;max-width:430px;max-height:88vh;overflow:auto;background:var(--paneel);color:var(--tekst);
+  border:1px solid var(--rand);border-radius:18px;padding:16px 16px 20px;box-shadow:var(--schaduw)}
 .sheet.wide{max-width:520px}
 .sheet h2{margin:0 0 12px;font-size:20px;display:flex;align-items:center;justify-content:space-between}
 .sheet h3{margin:16px 0 7px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;opacity:.65}
-.x{border:0;background:none;color:#fff;font-size:26px;line-height:1;cursor:pointer;opacity:.7}
+.x{border:0;background:none;color:var(--tekst);font-size:26px;line-height:1;cursor:pointer;opacity:.7}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;font-size:15px}
 .row input{flex:1;max-width:180px}
-input{background:#0f151f;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;
+input{background:var(--paneel2);border:1px solid var(--rand);color:var(--tekst);border-radius:10px;
   padding:9px 11px;font-size:15px;font-family:inherit}
 input[type=checkbox]{width:46px;height:27px;appearance:none;-webkit-appearance:none;border-radius:999px;
-  background:#39414f;position:relative;transition:.15s;flex:0 0 auto;padding:0}
+  background:var(--paneel3);position:relative;transition:.15s;flex:0 0 auto;padding:0}
 input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;
   background:#fff;transition:.15s}
 input[type=checkbox]:checked{background:#28a35f}
 input[type=checkbox]:checked::after{left:22px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{border:1px solid rgba(255,255,255,.22);background:#0f151f;color:#fff;border-radius:999px;padding:7px 13px;
+.chip{border:1px solid var(--rand);background:var(--paneel2);color:var(--tekst);border-radius:999px;padding:7px 13px;
   font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
-.chip.on{background:#28a35f;border-color:#57e194}
+.chip.on{background:var(--groen);border-color:var(--groen-rand);color:#fff}
 .chip .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(255,255,255,.35)}
 .btnrow{display:flex;gap:8px;margin-top:10px}
 .btnrow input{flex:1;min-width:0;max-width:none}
-.btn{flex:1;border:1px solid rgba(255,255,255,.22);background:#2a3342;color:#fff;border-radius:12px;padding:12px 10px;
+.btn{flex:1;border:1px solid var(--rand);background:var(--paneel3);color:var(--tekst);border-radius:12px;padding:12px 10px;
   font-size:15px;font-family:inherit;cursor:pointer}
-.btn.primary{background:#28a35f;border-color:#57e194;font-weight:700}
+.btn.primary{background:var(--groen);border-color:var(--groen-rand);color:#fff;font-weight:700}
 .btn.danger{background:#4b2029;border-color:#8c3b48}
 .btn.small{padding:8px;font-size:13px;margin-top:10px;width:100%}
 .btn:active{transform:scale(.98)}
@@ -149,11 +179,11 @@ input[type=checkbox]:checked::after{left:22px}
 
 /* profiel */
 .avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;
-  background:#2a3342;border:1px solid rgba(255,255,255,.3);color:#fff;font-weight:800;flex:0 0 auto;
+  background:var(--paneel3);border:1px solid var(--rand2);color:#fff;font-weight:800;flex:0 0 auto;
   background-size:cover;background-position:center;cursor:pointer;padding:0;font-family:inherit}
 .avatar.mini{width:20px;height:20px;font-size:9.5px;border-width:1px}
 .avatar.rij{width:28px;height:28px;font-size:12px;cursor:default}
-.avatar.groot{width:74px;height:74px;font-size:26px;border:2px dashed rgba(255,255,255,.35)}
+.avatar.groot{width:74px;height:74px;font-size:26px;border:2px dashed var(--rand2)}
 .avatar.groot.heeft{border-style:solid}
 .pill-ik{display:flex;align-items:center;gap:6px;padding-left:5px}
 .profiel{display:flex;gap:12px;align-items:center}
@@ -164,27 +194,27 @@ input[type=checkbox]:checked::after{left:22px}
 
 /* niveaus */
 .levels{display:flex;gap:8px}
-.lvl{flex:1;border:1px solid rgba(255,255,255,.2);background:#0f151f;border-radius:14px;padding:10px 8px;
+.lvl{flex:1;border:1px solid var(--rand);background:var(--paneel2);border-radius:14px;padding:10px 8px;
   color:#fff;cursor:pointer;text-align:center;font-family:inherit}
 .lvl b{display:block;font-size:14px;margin-bottom:2px}
 .lvl small{font-size:10.5px;opacity:.6;line-height:1.3;display:block}
-.lvl.on{background:#28a35f;border-color:#57e194}
+.lvl.on{background:var(--groen);border-color:var(--groen-rand);color:#fff}
 .lvl.on small{opacity:.85}
-.ladder{margin-top:14px;background:#0f151f;border-radius:14px;padding:11px 12px}
+.ladder{margin-top:14px;background:var(--paneel2);border-radius:14px;padding:11px 12px}
 .ladder-head{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:7px}
 .ladder-head span:last-child{opacity:.6}
-.ladder-bar{height:8px;border-radius:5px;background:#2a3342;overflow:hidden}
+.ladder-bar{height:8px;border-radius:5px;background:var(--paneel3);overflow:hidden}
 .ladder-bar i{display:block;height:100%;background:linear-gradient(90deg,#28a35f,#8ce06a);transition:width .5s}
 
 /* ranglijst */
 .tabs{display:flex;gap:6px;margin-bottom:8px}
 .tabs.sub .tab{font-size:12px;padding:5px 9px}
-.tab{flex:1;border:1px solid rgba(255,255,255,.18);background:#0f151f;color:#fff;border-radius:10px;padding:8px 6px;
+.tab{flex:1;border:1px solid var(--rand);background:var(--paneel2);color:var(--tekst);border-radius:10px;padding:8px 6px;
   font-size:13.5px;cursor:pointer;font-family:inherit}
-.tab.on{background:#28a35f;border-color:#57e194}
-.lb-wrap{max-height:52vh;overflow:auto;border-radius:12px;background:#0f151f}
+.tab.on{background:var(--groen);border-color:var(--groen-rand);color:#fff}
+.lb-wrap{max-height:52vh;overflow:auto;border-radius:12px;background:var(--paneel2)}
 table.lb{width:100%;border-collapse:collapse;font-size:13.5px}
-.lb td{padding:8px;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
+.lb td{padding:8px;border-bottom:1px solid var(--rand);white-space:nowrap}
 .lb tr:last-child td{border-bottom:0}
 .lb .pos{width:34px;opacity:.6;font-variant-numeric:tabular-nums}
 .lb .nm{width:100%;overflow:hidden;text-overflow:ellipsis;max-width:0}
@@ -194,17 +224,17 @@ table.lb{width:100%;border-collapse:collapse;font-size:13.5px}
 .lb tr.live td{background:rgba(255,213,74,.14);color:#ffe27a}
 .lb tr.top1 .pos{color:#ffd54a;opacity:1}
 .lb .empty{opacity:.5;text-align:center;padding:22px}
-.lb tr.head td{position:sticky;top:0;background:#161d29;font-size:11px;text-transform:uppercase;
+.lb tr.head td{position:sticky;top:0;background:var(--paneel2);font-size:11px;text-transform:uppercase;
   letter-spacing:.6px;opacity:.6;padding:6px 8px}
 
 /* doelen */
 .goals{display:flex;flex-direction:column;gap:8px}
-.goal{display:flex;gap:11px;align-items:center;background:#0f151f;border-radius:12px;padding:10px 12px}
+.goal{display:flex;gap:11px;align-items:center;background:var(--paneel2);border-radius:12px;padding:10px 12px}
 .goal .g-ico{font-size:22px;filter:grayscale(1);opacity:.45}
 .goal.done .g-ico{filter:none;opacity:1}
 .goal b{display:block;font-size:14px}
 .goal small{opacity:.6;font-size:12px}
-.goal.done{background:#173425}
+.goal.done{background:rgba(40,163,95,.18)}
 
 /* winst */
 .sheet.win{text-align:center;max-width:360px}
@@ -214,13 +244,13 @@ table.lb{width:100%;border-collapse:collapse;font-size:13.5px}
 .winstats small{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.6px}
 .winrank{font-size:15px;margin:10px 0 2px;color:#ffe27a}
 .winladder{font-size:13px;opacity:.8;margin:2px 0 8px}
-.statsbox{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13.5px;background:#0f151f;border-radius:12px;padding:11px}
+.statsbox{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13.5px;background:var(--paneel2);border-radius:12px;padding:11px}
 .statsbox span{opacity:.6}
 .statsbox b{font-variant-numeric:tabular-nums}
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:1150;display:none}
 #confetti.on{display:block}
-#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);background:rgba(0,0,0,.82);
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);background:rgba(0,0,0,.85);
   color:#fff;padding:9px 15px;border-radius:999px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:1300}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
@@ -231,3 +261,25 @@ table.lb{width:100%;border-collapse:collapse;font-size:13.5px}
   #topbar,#subbar{max-width:900px;width:100%;margin:0 auto}
   .tool{font-size:12.5px}
 }
+
+/* ---------- lichte stand: lichtere speeltafel per achtergrond ---------- */
+body.licht.bg-felt{background:radial-gradient(ellipse at 50% 12%,#6cc796 0%,#3f9f6d 45%,#1f6f49 100%)}
+body.licht.bg-night{background:radial-gradient(ellipse at 50% 10%,#cfe0f7 0%,#a9c2e8 45%,#7e9dd0 100%)}
+body.licht.bg-wood{background:linear-gradient(180deg,#e3c9a8,#cda87e 60%,#b58c5f)}
+body.licht.bg-wine{background:radial-gradient(ellipse at 50% 12%,#f0b9c8 0%,#dd8ba2 45%,#bb607c 100%)}
+body.licht.bg-sunset{background:linear-gradient(180deg,#ffd9b0,#f7b0c4 45%,#c9a8e0)}
+body.licht.bg-mono{background:linear-gradient(180deg,#eef0f3,#dcdfe4 60%,#c6cad1)}
+body.licht::after{opacity:.18}
+body.licht .cell,body.licht .foundation{border-color:rgba(0,0,0,.28);background:rgba(255,255,255,.35)}
+body.licht .foundation{color:rgba(0,0,0,.3)}
+body.licht .col::before{border-color:rgba(0,0,0,.14)}
+body.licht .card{box-shadow:0 1px 4px rgba(0,0,0,.35);border-color:rgba(0,0,0,.5)}
+body.licht #topbar .lbl{opacity:.7}
+body.licht .tool .ico{filter:saturate(1.15)}
+
+/* melding bij een nieuwe versie */
+.nieuws{margin:6px 0 0;padding-left:20px;font-size:14px}
+.nieuws li{margin-bottom:7px}
+.groet{background:var(--paneel2);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.5;margin:0 0 14px}
+.groet b{display:block;margin-bottom:2px}
+.groet .van{opacity:.7;font-size:13.5px;font-style:italic}

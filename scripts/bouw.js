@@ -53,11 +53,35 @@ function stempel(map) {
   }
 }
 
+/* Wat is er nieuw: de bovenste kop uit CHANGELOG.md met zijn opsomming.
+   Dat is precies wat de melding in het spel toont, dus het hoeft maar op één
+   plek bijgehouden te worden. */
+const SPLITS = new RegExp(String.fromCharCode(13) + '?' + String.fromCharCode(10));
+function versieInfo() {
+  const nieuws = [];
+  try {
+    const md = fs.readFileSync(path.join(wortel, 'CHANGELOG.md'), 'utf8').split(SPLITS);
+    let inBlok = false;
+    for (const regel of md) {
+      if (regel.startsWith('## ')) {
+        if (inBlok) break;
+        if (regel.indexOf(versie) !== -1) inBlok = true;
+        continue;
+      }
+      if (!inBlok) continue;
+      if (regel.startsWith('- ')) nieuws.push(regel.slice(2).trim());
+      else if (nieuws.length && regel.startsWith('  ')) nieuws[nieuws.length - 1] += ' ' + regel.trim();
+    }
+  } catch (e) { /* changelog is niet verplicht */ }
+  return { versie, nieuws, apk: 'FreeCell.apk' };
+}
+
 /* ---- de app (Capacitor) ---- */
 const www = path.join(wortel, 'www');
 leeg(www);
 kopieer(www, ['index.html', 'css', 'js', 'icons', 'manifest.webmanifest']);
 stempel(www);
+fs.writeFileSync(path.join(www, 'versie.json'), JSON.stringify(versieInfo(), null, 2));
 
 /* ---- de webversie ---- */
 function web(doel) {
@@ -75,7 +99,9 @@ function web(doel) {
   kopieer(spel, SPEL);
   stempel(spel);
 
-  fs.writeFileSync(path.join(doel, '.nojekyll'), '');   // GitHub Pages: geen Jekyll
+  fs.writeFileSync(path.join(doel, '.nojekyll'), '');
+  fs.writeFileSync(path.join(doel, 'versie.json'), JSON.stringify(versieInfo(), null, 2));
+  fs.writeFileSync(path.join(doel, 'spelen', 'versie.json'), JSON.stringify(versieInfo(), null, 2));   // GitHub Pages: geen Jekyll
   fs.writeFileSync(path.join(doel, 'versie.txt'), versie + '\n');
 
   if (fs.existsSync(apkBron)) {

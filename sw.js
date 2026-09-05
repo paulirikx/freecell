@@ -12,15 +12,21 @@ var BESTANDEN = [
   './js/store.js',
   './js/ui.js',
   './manifest.webmanifest',
+  './versie.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-180.png'
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(BESTANDEN); }).then(function () {
-    return self.skipWaiting();
-  }));
+  // Bewust geen skipWaiting: de nieuwe versie blijft klaarstaan tot de speler
+  // in de melding op "Nu vernieuwen" tikt. Anders wisselen de bestanden
+  // midden in een potje.
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(BESTANDEN); }));
+});
+
+self.addEventListener('message', function (e) {
+  if (e.data && e.data.type === 'NU_VERNIEUWEN') self.skipWaiting();
 });
 
 self.addEventListener('activate', function (e) {

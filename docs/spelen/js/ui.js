@@ -766,10 +766,26 @@
   var DECKS = [['classic', 'Klassiek'], ['pips', 'Volledige kaarten *'], ['four', 'Vier kleuren'],
                ['big', 'Groot & simpel'], ['night', 'Donker']];
 
-  function renderSettings() {
+  var THEMAS = [['auto', 'Volg mijn telefoon'], ['licht', 'Licht'], ['donker', 'Donker']];
+  function renderIk() {
     $('set-name').value = P.naam || '';
     $('set-tekst').value = P.tekst || '';
     zetAvatar($('set-avatar'), naam(), P.foto, true);
+    $('set-thema').innerHTML = THEMAS.map(function (t) {
+      return '<button class="chip' + ((S.thema || 'auto') === t[0] ? ' on' : '') + '" data-thema="' + t[0] + '">' +
+        t[1] + '</button>';
+    }).join('');
+  }
+  $('set-thema').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-thema]'); if (!b) return;
+    S.thema = b.dataset.thema; Store.saveSettings(); applyLook(); renderIk(); render(false);
+  });
+  $('ik-ranglijst').onclick = function () { open('ov-board'); };
+  $('ik-doelen').onclick = function () { renderGoals(); open('ov-goals'); };
+  $('ik-instellingen').onclick = function () { renderSettings(); open('ov-settings'); };
+  $('btn-naar-ik').onclick = function () { renderIk(); open('ov-ik'); };
+
+  function renderSettings() {
     $('set-bg').innerHTML = BGS.map(function (b) {
       return '<button class="chip' + (S.bg === b[0] ? ' on' : '') + '" data-bg="' + b[0] + '">' +
              '<span class="sw" style="background:' + b[2] + '"></span>' + b[1] + '</button>';
@@ -795,9 +811,24 @@
     $('ver').textContent = Store.VERSION;
     updateInstallBox();
   }
+  function themaLicht() {
+    if (S.thema === 'licht') return true;
+    if (S.thema === 'donker') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  }
   function applyLook() {
-    document.body.className = 'bg-' + S.bg + ' deck-' + S.deck + (S.lefty ? ' lefty' : '');
+    document.body.className = 'bg-' + S.bg + ' deck-' + S.deck +
+      (S.lefty ? ' lefty' : '') + (themaLicht() ? ' licht' : '');
+    var mt = document.querySelector('meta[name=theme-color]');
+    if (mt) mt.setAttribute('content', themaLicht() ? '#5cbb86' : '#0b5c34');
     sizeBoard();
+  }
+  if (window.matchMedia) {
+    try {
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () {
+        if (!S.thema || S.thema === 'auto') applyLook();
+      });
+    } catch (e) {}
   }
 
   $('set-bg').addEventListener('click', function (e) {
@@ -828,7 +859,7 @@
   $('set-avatar').onclick = function () { kiesFoto(profielGewijzigd); };
   $('btn-foto').onclick = function () { kiesFoto(profielGewijzigd); };
   $('btn-foto-weg').onclick = function () { P.foto = ''; profielGewijzigd(); toast('Foto weggehaald'); };
-  $('pill-ik').onclick = function () { renderSettings(); open('ov-settings'); };
+  $('pill-ik').onclick = function () { renderIk(); open('ov-ik'); };
   ['autoplay', 'sound', 'anim', 'lefty'].forEach(function (k) {
     $('set-' + k).addEventListener('change', function () {
       S[k] = this.checked; Store.saveSettings(); applyLook();
@@ -962,8 +993,70 @@
     installPrompt.prompt();
     installPrompt.userChoice.then(function () { installPrompt = null; updateInstallBox(); });
   });
+  /* ---------------- nieuwe versie melden ---------------- */
+  var svgReg = null, vernieuwt = false;
+
+  function toonUpdate(versie, nieuws, apkUrl) {
+    $('up-versie').textContent = versie ? 'v' + versie : '';
+    $('up-nieuws').innerHTML = (nieuws || []).map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
+    var knop = $('up-nu');
+    if (apkUrl) {
+      $('up-uitleg').textContent = 'Er staat een nieuwere app klaar om te downloaden.';
+      knop.textContent = 'Nieuwe app ophalen';
+      knop.onclick = function () { window.open(apkUrl, '_blank'); close(); };
+    } else {
+      $('up-uitleg').textContent = 'De nieuwe versie staat klaar. Even vernieuwen en je speelt bij.';
+      knop.textContent = 'Nu vernieuwen';
+      knop.onclick = function () {
+        vernieuwt = true;
+        if (svgReg && svgReg.waiting) svgReg.waiting.postMessage({ type: 'NU_VERNIEUWEN' });
+        else location.reload();
+      };
+    }
+    if (document.querySelector('.overlay.on')) return;   // niet over een ander venster heen
+    open('ov-update');
+  }
+
+  function haalNieuws(klaar) {
+    fetch('versie.json?t=' + Date.now()).then(function (r) { return r.json(); })
+      .then(function (v) { klaar(v.versie, v.nieuws); })
+      .catch(function () { klaar('', []); });
+  }
+
   if ('serviceWorker' in navigator && !window.Capacitor && location.protocol.indexOf('http') === 0) {
-    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        svgReg = reg;
+        function bekijk(w) {
+          if (!w) return;
+          w.addEventListener('statechange', function () {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) haalNieuws(toonUpdate);
+          });
+        }
+        if (reg.waiting && navigator.serviceWorker.controller) haalNieuws(toonUpdate);
+        bekijk(reg.installing);
+        reg.addEventListener('updatefound', function () { bekijk(reg.installing); });
+        setInterval(function () { reg.update().catch(function () {}); }, 20 * 60 * 1000);
+      }).catch(function () {});
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (vernieuwt) location.reload();
+      });
+    });
+  }
+
+  /* In de Android-app kan de app zichzelf niet vernieuwen; daar kijken we of er
+     een nieuwere APK op de site staat. Zonder internet gebeurt er niets. */
+  if (window.Capacitor) {
+    setTimeout(function () {
+      var basis = 'https://paulirikx.github.io/freecell/';
+      fetch(basis + 'versie.json?t=' + Date.now()).then(function (r) { return r.json(); })
+        .then(function (v) {
+          if (!v || !v.versie || v.versie === Store.VERSION) return;
+          var a = v.versie.split('.').map(Number), b = Store.VERSION.split('.').map(Number);
+          var nieuwer = a[0] > b[0] || (a[0] === b[0] && (a[1] > b[1] || (a[1] === b[1] && a[2] > b[2])));
+          if (nieuwer) toonUpdate(v.versie, v.nieuws, basis + (v.apk || 'FreeCell.apk'));
+        }).catch(function () {});
+    }, 3000);
   }
 
   /* Android-terugknop: eerst een open venster sluiten, pas daarna de app. */

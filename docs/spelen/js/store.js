@@ -3,7 +3,7 @@
    ============================================================ */
 var Store = (function () {
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
 
   function load(key, def) {
     try {
@@ -20,6 +20,7 @@ var Store = (function () {
   var settings = load('fc.settings', {
     name: '', bg: 'felt', deck: 'classic', letters: 'jqk',
     autoplay: true, sound: true, anim: true, lefty: false,
+    thema: 'auto',            // auto volgt de telefoon; anders 'licht' of 'donker'
     level: 'beginner'
   });
 

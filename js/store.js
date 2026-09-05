@@ -20,6 +20,7 @@ var Store = (function () {
   var settings = load('fc.settings', {
     name: '', bg: 'felt', deck: 'classic', letters: 'jqk',
     autoplay: true, sound: true, anim: true, lefty: false,
+    thema: 'auto',            // auto volgt de telefoon; anders 'licht' of 'donker'
     level: 'beginner'
   });
 

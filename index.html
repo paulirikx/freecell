@@ -56,20 +56,9 @@
   <div class="sheet">
     <h2>Instellingen <button class="x" data-close>&times;</button></h2>
 
-    <h3>Jouw profiel</h3>
-    <div class="profiel">
-      <button class="avatar groot" id="set-avatar" title="Foto kiezen"></button>
-      <div class="profiel-velden">
-        <input id="set-name" maxlength="14" placeholder="Jouw naam">
-        <input id="set-tekst" maxlength="34" placeholder="Iets over jezelf (mag leeg)">
-      </div>
-    </div>
     <div class="btnrow">
-      <button class="btn small2" id="btn-foto">Foto kiezen</button>
-      <button class="btn small2" id="btn-foto-weg">Foto weghalen</button>
+      <button class="btn" id="btn-naar-ik">Jouw gegevens &amp; weergave</button>
     </div>
-    <p class="fineprint">Je naam staat bij je tijden in de ranglijst. Foto en tekst zijn optioneel en blijven
-      op dit apparaat &mdash; er wordt niets verstuurd.</p>
 
     <h3>Achtergrond</h3>
     <div class="chips" id="set-bg"></div>
@@ -103,9 +92,57 @@
   </div>
 </div>
 
+<div class="overlay" id="ov-update">
+  <div class="sheet">
+    <h2>Nieuwe versie <span id="up-versie"></span></h2>
+    <p class="hintline" id="up-uitleg">Er staat een nieuwere versie klaar.</p>
+    <ul class="nieuws" id="up-nieuws"></ul>
+    <div class="btnrow">
+      <button class="btn primary" id="up-nu">Nu vernieuwen</button>
+      <button class="btn" data-close>Later</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-ik">
+  <div class="sheet">
+    <h2>Mijn menu <button class="x" data-close>&times;</button></h2>
+
+    <h3>Jouw gegevens</h3>
+    <div class="profiel">
+      <button class="avatar groot" id="set-avatar" title="Foto kiezen"></button>
+      <div class="profiel-velden">
+        <input id="set-name" maxlength="14" placeholder="Jouw naam">
+        <input id="set-tekst" maxlength="34" placeholder="Iets over jezelf (mag leeg)">
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn small2" id="btn-foto">Foto kiezen</button>
+      <button class="btn small2" id="btn-foto-weg">Foto weghalen</button>
+    </div>
+    <p class="fineprint">Je naam en avatar staan bij je tijden in de ranglijst. Foto en tekst zijn optioneel en
+      blijven op dit apparaat &mdash; er wordt niets verstuurd.</p>
+
+    <h3>Licht of donker</h3>
+    <div class="chips" id="set-thema"></div>
+    <p class="fineprint">Bij "Volg mijn telefoon" wisselt het spel mee met de stand van je toestel.</p>
+
+    <h3>Snel naar</h3>
+    <div class="btnrow">
+      <button class="btn" id="ik-ranglijst">Ranglijst</button>
+      <button class="btn" id="ik-doelen">Doelen</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="ik-instellingen">Alle instellingen</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="ov-hallo">
   <div class="sheet">
-    <h2>Welkom bij FreeCell</h2>
+    <h2>Hé, leuk dat je meespeelt!</h2>
+    <p class="groet">Veel plezier met FreeCell — en laat je niet inmaken.
+      <span class="van">Groetjes, Jacqueline</span></p>
     <p class="hintline">Onder welke naam wil je in de ranglijst staan? Die kun je later altijd nog veranderen.</p>
     <div class="profiel" style="margin-top:14px">
       <button class="avatar groot" id="hallo-avatar" title="Foto kiezen"></button>

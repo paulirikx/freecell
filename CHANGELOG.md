@@ -4,15 +4,22 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.2.0 — 5 september 2026
+
+- Mijn menu: tik linksboven op je naam voor je gegevens (naam, foto, een regel
+  over jezelf) en de keuze tussen licht en donker.
+- Licht of donker, of laat het spel de stand van je telefoon volgen.
+- Grotere cijfers en duidelijkere symbolen op de kaarten.
+- Het spel zegt het voortaan zelf als er een nieuwe versie klaarstaat.
+- Een welkomstgroet bij de allereerste start.
+
 ## 1.1.0 — 5 september 2026
 
-- Slepen met de vinger werkte niet op de telefoon: de browser pakte de
-  veegbeweging af. `touch-action: none` op het speelveld lost dat op, en een
-  gesleepte stapel wordt nu iets boven je vinger getekend zodat je ziet wat je
-  vasthebt.
-- Spelersprofiel: bij de eerste start vraagt het spel je naam (verplicht, later
-  te wijzigen), met optioneel een foto en een regel over jezelf. Je naam en
-  avatar staan in de ranglijst en in de balk bovenin.
+- Slepen met je vinger werkt nu zoals het hoort: de kaart volgt je vinger en
+  wordt er net boven getekend, zodat je ziet wat je vasthebt.
+- Je hebt nu een eigen profiel: bij de eerste start vraagt het spel je naam
+  (later te wijzigen), met desgewenst een foto en een regel over jezelf. Je
+  naam en avatar staan in de ranglijst en in de balk bovenin.
 
 ## 1.0.0 — 5 september 2026
 
