@@ -3,13 +3,42 @@
 Een complete FreeCell-patience voor telefoon en desktop. Pure HTML/CSS/JS — geen build, geen server nodig,
 geen account. Alles (ranglijst, statistieken, doelen, treden) staat lokaal in de browser.
 
-## Starten
+## Waar het staat
 
-Dubbelklik `index.html`, of serveer de map:
+| | |
+|---|---|
+| Spelen | https://paulirikx.github.io/freecell/spelen/ |
+| Landingspagina + gratis APK | https://paulirikx.github.io/freecell/ |
+| Op de site van grAItt Studio | appcard op `apps.html` wijst naar bovenstaande pagina |
+
+## Ontwikkelen
+
+Dubbelklik `index.html` (dat is het spel zelf), of serveer de map:
 
 ```bash
 python -m http.server 5182 --directory D:/claude/freecell
 ```
+
+## Uitgeven
+
+```bash
+bun run apk:release     # ondertekende APK -> apk/FreeCell-<versie>.apk
+node scripts/bouw.js    # webversie -> docs/ (GitHub Pages) en graitt-site
+git add -A && git commit -m "..." && git push
+```
+
+`scripts/bouw.js` zet dezelfde bron op drie plekken neer: `www/` voor de
+Android-app, `docs/` voor GitHub Pages en `../graitt-site/**` voor het eigen
+domein. De webversie heeft overal dezelfde vorm: `index.html` is de
+landingspagina, `spelen/` het spel, `FreeCell.apk` de app.
+
+Het versienummer staat alleen in `package.json` en wordt bij het bouwen
+ingevuld in de app (versionName/versionCode), op de landingspagina en in de
+naam van de service-worker-cache.
+
+De foto op de landingspagina wordt gemaakt door `scripts/foto.py`: die
+overschildert elke POLITIE-tekst met FREECELL, in het juiste perspectief.
+De bronfoto blijft privé (staat in `.gitignore`).
 
 ## Spelen
 
