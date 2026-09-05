@@ -213,6 +213,22 @@
 /* De landingspagina en het spel staan op hetzelfde adres, dus we kunnen hier
    laten zien in welke club je zit. Er wordt niets opgehaald of verstuurd. */
 (function () {
+  /* Uitnodigingslink: ?club=CODE. Dan hoeft niemand iets in te typen. */
+  var uit = (/[?&]club=([A-Za-z0-9]{6})/.exec(location.search) || [])[1];
+  if (uit) {
+    uit = uit.toUpperCase();
+    var kop = document.createElement('div');
+    kop.className = 'card';
+    kop.style.borderColor = '#57e194';
+    kop.innerHTML = '<h2>Je bent uitgenodigd</h2><p>Je komt met code <b>' + uit + '</b> meteen in de juiste ' +
+      'ranglijst terecht. Tik hieronder en je speelt mee.</p>' +
+      '<a class="btn primary" style="display:block;text-align:center;text-decoration:none" href="spelen/?club=' +
+      uit + '">Meedoen en spelen</a>';
+    var w = document.querySelector('.wrap');
+    w.insertBefore(kop, w.querySelector('h1').nextSibling);
+    document.querySelectorAll('a.btn[href="spelen/"]').forEach(function (a) { a.href = 'spelen/?club=' + uit; });
+  }
+
   var instellingen = {};
   try { instellingen = JSON.parse(localStorage.getItem('fc.settings') || '{}') || {}; } catch (e) {}
   var code = instellingen.club;
