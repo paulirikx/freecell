@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b5c34">
+<title>FreeCell</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="icons/favicon.png" type="image/png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="FreeCell-patience met tijdrace, ranglijst en oplopende moeilijkheid. Speel direct in je browser.">
+</head>
+<body class="bg-felt deck-classic">
+
+<div id="app">
+  <header id="topbar">
+    <button class="round" id="btn-settings" aria-label="Instellingen">&#9881;</button>
+    <div class="stat"><span class="lbl">Score</span><span class="val" id="stat-score">0</span></div>
+    <div class="stat"><span class="lbl">Tijd</span><span class="val" id="stat-time">0:00</span></div>
+    <div class="stat"><span class="lbl">Zetten</span><span class="val" id="stat-moves">0</span></div>
+    <button class="round" id="btn-goals" aria-label="Doelen">&#9733;</button>
+  </header>
+
+  <div id="subbar">
+    <button class="pill" id="pill-level">Beginner &middot; trede 1</button>
+    <button class="pill" id="pill-deal">Spel #1</button>
+    <button class="pill" id="pill-rank">Ranglijst</button>
+    <span class="pill ghost" id="pill-pb"></span>
+  </div>
+
+  <main id="board">
+    <div id="topzone"></div>
+    <div id="tableau"></div>
+  </main>
+
+  <footer id="bottombar">
+    <button class="tool" id="btn-new"><span class="ico">&#127183;</span><span>Nieuw</span></button>
+    <button class="tool" id="btn-board"><span class="ico">&#127942;</span><span>Ranglijst</span></button>
+    <button class="tool" id="btn-hint"><span class="ico">&#128161;</span><span>Hint</span><span class="badge" id="hint-badge"></span></button>
+    <button class="tool" id="btn-auto"><span class="ico">&#9889;</span><span>Auto</span></button>
+    <button class="tool" id="btn-undo"><span class="ico">&#8630;</span><span>Terug</span><span class="badge" id="undo-badge"></span></button>
+  </footer>
+</div>
+
+<div id="drag"></div>
+<canvas id="confetti"></canvas>
+<div id="toast"></div>
+
+<!-- ============ Overlays ============ -->
+<div class="overlay" id="ov-settings">
+  <div class="sheet">
+    <h2>Instellingen <button class="x" data-close>&times;</button></h2>
+
+    <label class="row"><span>Jouw naam</span><input id="set-name" maxlength="14" placeholder="Speler"></label>
+
+    <h3>Achtergrond</h3>
+    <div class="chips" id="set-bg"></div>
+
+    <h3>Kaarten</h3>
+    <div class="chips" id="set-deck"></div>
+    <p class="fineprint">* Volledige kaartbeelden met alle symbolen verschijnen alleen als de kaarten breed genoeg zijn (tablet, liggend of desktop). Op een smal scherm valt die stijl terug op het rustige beeld.</p>
+
+    <h3>Kaartletters</h3>
+    <div class="chips" id="set-letters"></div>
+
+    <h3>Spel</h3>
+    <label class="row toggle"><span>Azen automatisch afleggen</span><input type="checkbox" id="set-autoplay"></label>
+    <label class="row toggle"><span>Geluid</span><input type="checkbox" id="set-sound"></label>
+    <label class="row toggle"><span>Animaties</span><input type="checkbox" id="set-anim"></label>
+    <label class="row toggle"><span>Linkshandig (cellen rechts)</span><input type="checkbox" id="set-lefty"></label>
+
+    <h3>Op je telefoon</h3>
+    <div id="install-box">
+      <div class="btnrow" id="install-row">
+        <a class="btn primary" id="btn-apk" href="../">Gratis Android-app</a>
+        <button class="btn" id="btn-install">Aan startscherm</button>
+      </div>
+      <p class="fineprint" id="install-note">Dan speelt het als een echte app, ook zonder internet.</p>
+    </div>
+
+    <h3>Statistieken</h3>
+    <div id="stats-box" class="statsbox"></div>
+    <button class="btn danger small" id="btn-reset-stats">Statistieken &amp; ranglijst wissen</button>
+    <p class="fineprint">FreeCell v<span id="ver"></span> &middot; alles wordt lokaal op dit apparaat opgeslagen.</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-new">
+  <div class="sheet">
+    <h2>Nieuw spel <button class="x" data-close>&times;</button></h2>
+
+    <h3>Niveau</h3>
+    <div class="levels" id="set-level"></div>
+    <div class="ladder">
+      <div class="ladder-head"><span id="ladder-title">Trede 1</span><span id="ladder-sub"></span></div>
+      <div class="ladder-bar"><i id="ladder-fill"></i></div>
+      <p class="hintline" id="ladder-desc"></p>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn primary" id="btn-start-ladder">Volgend spel op mijn trede</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="btn-start-daily">Dagpuzzel</button>
+      <button class="btn" id="btn-start-again">Zelfde spel opnieuw</button>
+    </div>
+    <div class="btnrow">
+      <input id="deal-input" type="number" min="1" max="1000000" placeholder="Spelnummer">
+      <button class="btn" id="btn-start-number">Speel dit nummer</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="btn-share-deal">Daag iemand uit met dit spel</button>
+    </div>
+    <p class="fineprint">Elk spelnummer geeft altijd dezelfde begindeal &mdash; wie jouw link opent, speelt exact dezelfde kaarten.</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-board">
+  <div class="sheet wide">
+    <h2>Ranglijst <button class="x" data-close>&times;</button></h2>
+    <div class="tabs" id="lb-sort">
+      <button class="tab on" data-sort="ms">Tijd</button>
+      <button class="tab" data-sort="moves">Zetten</button>
+      <button class="tab" data-sort="score">Score</button>
+    </div>
+    <div class="tabs sub" id="lb-scope">
+      <button class="tab on" data-scope="level">Mijn niveau</button>
+      <button class="tab" data-scope="all">Alles</button>
+      <button class="tab" data-scope="deal">Dit spel</button>
+      <button class="tab" data-scope="daily">Dagpuzzel</button>
+    </div>
+    <div class="lb-wrap"><table class="lb"><tbody id="lb-body"></tbody></table></div>
+    <p class="fineprint" id="lb-note"></p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-goals">
+  <div class="sheet">
+    <h2>Doelen <button class="x" data-close>&times;</button></h2>
+    <div id="goals-list" class="goals"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-win">
+  <div class="sheet win">
+    <h2 id="win-title">Gewonnen!</h2>
+    <div class="winstats">
+      <div><span id="win-time">0:00</span><small>tijd</small></div>
+      <div><span id="win-moves">0</span><small>zetten</small></div>
+      <div><span id="win-score">0</span><small>score</small></div>
+    </div>
+    <p id="win-rank" class="winrank"></p>
+    <p id="win-ladder" class="winladder"></p>
+    <label class="row" id="win-namerow"><span>Naam</span><input id="win-name" maxlength="14" placeholder="Speler"></label>
+    <div class="btnrow">
+      <button class="btn primary" id="btn-win-next">Volgend spel</button>
+      <button class="btn" id="btn-win-board">Ranglijst</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="btn-win-share">Deel je tijd &amp; daag iemand uit</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-lose">
+  <div class="sheet">
+    <h2>Vastgelopen</h2>
+    <p class="hintline">Er is geen zet meer mogelijk. Draai een paar zetten terug of begin opnieuw.</p>
+    <div class="btnrow">
+      <button class="btn primary" id="btn-lose-undo">Zet terugdraaien</button>
+      <button class="btn" id="btn-lose-new">Nieuw spel</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/deal.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

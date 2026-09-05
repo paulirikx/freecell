@@ -1,0 +1,23 @@
+{
+  "name": "freecell",
+  "private": true,
+  "version": "1.0.0",
+  "description": "FreeCell-patience met tijdrace, ranglijst en oplopende moeilijkheid.",
+  "type": "module",
+  "scripts": {
+    "bouw": "node scripts/bouw.js",
+    "sync": "node scripts/bouw.js && cap sync android",
+    "apk": "node scripts/bouw.js && cap sync android && bash scripts/build-apk.sh debug",
+    "apk:release": "node scripts/bouw.js && cap sync android && bash scripts/build-apk.sh release"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.1",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.1"
+  }
+}

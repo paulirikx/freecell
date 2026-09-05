@@ -1,0 +1,12 @@
+node_modules/
+www/
+apk/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/keystore.properties
+android/*.jks
+.DS_Store
+dist/
+assets/jacqueline.jpeg

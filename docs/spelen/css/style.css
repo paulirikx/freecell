@@ -1,0 +1,214 @@
+/* ---------- basis ---------- */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#fff;background:#0b5c34;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;
+}
+#app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+
+/* ---------- achtergronden ---------- */
+body.bg-felt{background:radial-gradient(ellipse at 50% 12%,#1a8f56 0%,#0d6438 45%,#053f22 100%)}
+body.bg-night{background:radial-gradient(ellipse at 50% 10%,#28406b 0%,#16233d 45%,#080d18 100%)}
+body.bg-wood{background:linear-gradient(180deg,#6b3f21,#3d2211 60%,#24140a)}
+body.bg-wine{background:radial-gradient(ellipse at 50% 12%,#8b1f3a 0%,#5b1226 45%,#2b0812 100%)}
+body.bg-sunset{background:linear-gradient(180deg,#ff9a5a,#e0577f 45%,#5b2a86)}
+body.bg-mono{background:linear-gradient(180deg,#3a3f45,#22262b 60%,#121417)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:4px 4px}
+
+/* ---------- topbar ---------- */
+#topbar{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 10px 2px}
+#topbar .stat{text-align:center;line-height:1.05;flex:1}
+#topbar .lbl{display:block;font-size:13px;opacity:.85;letter-spacing:.3px}
+#topbar .val{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.round{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.55);
+  background:rgba(0,0,0,.35);color:#ffd85e;font-size:20px;line-height:1;cursor:pointer;flex:0 0 auto}
+.round:active{transform:scale(.94)}
+#topbar .val.warn{color:#ffb4b4}
+
+#subbar{display:flex;gap:6px;padding:4px 10px 6px;overflow-x:auto;scrollbar-width:none}
+#subbar::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.28);color:#fff;
+  border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.pill.ghost{opacity:.75;cursor:default}
+.pill.up{background:#1f7a45;border-color:#48d68b}
+.pill:active{transform:scale(.96)}
+
+/* ---------- speelveld ---------- */
+#board{flex:1;min-height:0;padding:0 6px;display:flex;flex-direction:column;gap:8px}
+#topzone,#tableau{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--gap,6px)}
+#tableau{flex:1;min-height:0;position:relative}
+body.lefty #topzone{direction:rtl}
+body.lefty #topzone>*{direction:ltr}
+
+.pile{position:relative;border-radius:calc(var(--cw)*.09)}
+.cell,.foundation{height:var(--ch);border:2px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08)}
+.foundation{color:rgba(255,255,255,.32);display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--cw)*.5);font-weight:700}
+.cell.locked{opacity:.28;border-style:dashed}
+.col{min-height:var(--ch)}
+.col::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--ch);border-radius:inherit;
+  border:2px dashed rgba(255,255,255,.16)}
+.pile.droppable{box-shadow:0 0 0 3px #ffe27a,0 0 18px rgba(255,226,122,.6)}
+.pile.hintTo{animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{box-shadow:0 0 0 3px #7ce0ff,0 0 20px rgba(124,224,255,.7)}}
+
+/* ---------- kaarten ---------- */
+.card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.09);
+  background:#fdfbf5;color:#111;box-shadow:0 1px 2px rgba(0,0,0,.45);cursor:pointer;overflow:hidden;
+  border:1px solid rgba(0,0,0,.35)}
+.card .idx{position:absolute;left:6%;top:2%;line-height:1;text-align:center;font-weight:800;
+  font-size:calc(var(--cw)*.33);letter-spacing:-.5px}
+.card .idx .s{display:block;font-size:calc(var(--cw)*.27);margin-top:calc(var(--cw)*-.01)}
+.card .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--cw)*.22);line-height:1}
+.card .pip.rev{transform:translate(-50%,-50%) rotate(180deg)}
+.card .big{position:absolute;left:52%;top:60%;transform:translate(-50%,-50%);font-size:calc(var(--cw)*.62);line-height:1}
+.card .court{position:absolute;left:54%;top:58%;transform:translate(-50%,-50%);text-align:center;
+  font-size:calc(var(--cw)*.3);line-height:1.05}
+.card .court b{display:block;font-size:calc(var(--cw)*.46)}
+.card.red{color:#c2172c}
+.card.black{color:#14161c}
+.card.dragging{opacity:.28}
+.card.moving{z-index:900!important}
+.card.hintFrom{outline:3px solid #7ce0ff;outline-offset:-3px}
+.card.nomove{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* kaartstijlen: standaard hoekindex + groot symbool (rustig op smalle schermen) */
+.card .pip,.card .court{display:none}
+body.deck-pips .card .pip,body.deck-pips .card .court{display:block}
+body.deck-pips .card .big{display:none}
+body.narrow.deck-pips .card .pip{display:none}
+body.narrow.deck-pips .card .big{display:block}
+body.deck-four .card.s2{color:#1560c9}
+body.deck-four .card.s3{color:#0b8a45}
+body.deck-big .card .idx{font-size:calc(var(--cw)*.44);left:7%}
+body.deck-big .card .idx .s{font-size:calc(var(--cw)*.34)}
+body.deck-big .card .big{font-size:calc(var(--cw)*.72);top:64%}
+body.deck-night .card{background:#1d222c;border-color:#000}
+body.deck-night .card.black{color:#e8ecf5}
+body.deck-night .card.red{color:#ff5f77}
+
+/* ---------- drag laag ---------- */
+#drag{position:fixed;left:0;top:0;pointer-events:none;z-index:1000;will-change:transform}
+#drag .card{box-shadow:0 10px 22px rgba(0,0,0,.55)}
+
+/* ---------- onderbalk ---------- */
+#bottombar{display:flex;justify-content:space-around;align-items:center;gap:4px;margin:6px 8px;
+  padding:6px 4px;border-radius:16px;background:rgba(0,0,0,.35)}
+.tool{position:relative;flex:1;border:0;background:none;color:#fff;font-size:11.5px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;border-radius:12px;font-family:inherit}
+.tool .ico{font-size:21px;line-height:1}
+.tool:disabled{opacity:.35}
+.tool:active:not(:disabled){background:rgba(255,255,255,.12)}
+.tool .badge{position:absolute;top:0;right:20%;min-width:16px;height:16px;border-radius:8px;background:#e0364b;
+  font-size:10px;line-height:16px;font-weight:700;padding:0 4px}
+.tool .badge:empty{display:none}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;
+  padding:14px;z-index:1200}
+.overlay.on{display:flex}
+.sheet{width:100%;max-width:430px;max-height:88vh;overflow:auto;background:#1b2330;border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;padding:16px 16px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.sheet.wide{max-width:520px}
+.sheet h2{margin:0 0 12px;font-size:20px;display:flex;align-items:center;justify-content:space-between}
+.sheet h3{margin:16px 0 7px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;opacity:.65}
+.x{border:0;background:none;color:#fff;font-size:26px;line-height:1;cursor:pointer;opacity:.7}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;font-size:15px}
+.row input{flex:1;max-width:180px}
+input{background:#0f151f;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;
+  padding:9px 11px;font-size:15px;font-family:inherit}
+input[type=checkbox]{width:46px;height:27px;appearance:none;-webkit-appearance:none;border-radius:999px;
+  background:#39414f;position:relative;transition:.15s;flex:0 0 auto;padding:0}
+input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;
+  background:#fff;transition:.15s}
+input[type=checkbox]:checked{background:#28a35f}
+input[type=checkbox]:checked::after{left:22px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid rgba(255,255,255,.22);background:#0f151f;color:#fff;border-radius:999px;padding:7px 13px;
+  font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.chip.on{background:#28a35f;border-color:#57e194}
+.chip .sw{width:15px;height:15px;border-radius:4px;border:1px solid rgba(255,255,255,.35)}
+.btnrow{display:flex;gap:8px;margin-top:10px}
+.btnrow input{flex:1;min-width:0;max-width:none}
+.btn{flex:1;border:1px solid rgba(255,255,255,.22);background:#2a3342;color:#fff;border-radius:12px;padding:12px 10px;
+  font-size:15px;font-family:inherit;cursor:pointer}
+.btn.primary{background:#28a35f;border-color:#57e194;font-weight:700}
+.btn.danger{background:#4b2029;border-color:#8c3b48}
+.btn.small{padding:8px;font-size:13px;margin-top:10px;width:100%}
+.btn:active{transform:scale(.98)}
+.fineprint{font-size:11.5px;opacity:.55;margin:12px 0 0;line-height:1.45}
+.hintline{font-size:13px;opacity:.75;line-height:1.5;margin:6px 0 0}
+
+/* niveaus */
+.levels{display:flex;gap:8px}
+.lvl{flex:1;border:1px solid rgba(255,255,255,.2);background:#0f151f;border-radius:14px;padding:10px 8px;
+  color:#fff;cursor:pointer;text-align:center;font-family:inherit}
+.lvl b{display:block;font-size:14px;margin-bottom:2px}
+.lvl small{font-size:10.5px;opacity:.6;line-height:1.3;display:block}
+.lvl.on{background:#28a35f;border-color:#57e194}
+.lvl.on small{opacity:.85}
+.ladder{margin-top:14px;background:#0f151f;border-radius:14px;padding:11px 12px}
+.ladder-head{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:7px}
+.ladder-head span:last-child{opacity:.6}
+.ladder-bar{height:8px;border-radius:5px;background:#2a3342;overflow:hidden}
+.ladder-bar i{display:block;height:100%;background:linear-gradient(90deg,#28a35f,#8ce06a);transition:width .5s}
+
+/* ranglijst */
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tabs.sub .tab{font-size:12px;padding:5px 9px}
+.tab{flex:1;border:1px solid rgba(255,255,255,.18);background:#0f151f;color:#fff;border-radius:10px;padding:8px 6px;
+  font-size:13.5px;cursor:pointer;font-family:inherit}
+.tab.on{background:#28a35f;border-color:#57e194}
+.lb-wrap{max-height:52vh;overflow:auto;border-radius:12px;background:#0f151f}
+table.lb{width:100%;border-collapse:collapse;font-size:13.5px}
+.lb td{padding:8px;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
+.lb tr:last-child td{border-bottom:0}
+.lb .pos{width:34px;opacity:.6;font-variant-numeric:tabular-nums}
+.lb .nm{width:100%;overflow:hidden;text-overflow:ellipsis;max-width:0}
+.lb .nm i{font-style:normal;opacity:.45;font-size:11.5px;display:block}
+.lb .num{text-align:right;font-variant-numeric:tabular-nums}
+.lb tr.me td{background:rgba(40,163,95,.18)}
+.lb tr.live td{background:rgba(255,213,74,.14);color:#ffe27a}
+.lb tr.top1 .pos{color:#ffd54a;opacity:1}
+.lb .empty{opacity:.5;text-align:center;padding:22px}
+.lb tr.head td{position:sticky;top:0;background:#161d29;font-size:11px;text-transform:uppercase;
+  letter-spacing:.6px;opacity:.6;padding:6px 8px}
+
+/* doelen */
+.goals{display:flex;flex-direction:column;gap:8px}
+.goal{display:flex;gap:11px;align-items:center;background:#0f151f;border-radius:12px;padding:10px 12px}
+.goal .g-ico{font-size:22px;filter:grayscale(1);opacity:.45}
+.goal.done .g-ico{filter:none;opacity:1}
+.goal b{display:block;font-size:14px}
+.goal small{opacity:.6;font-size:12px}
+.goal.done{background:#173425}
+
+/* winst */
+.sheet.win{text-align:center;max-width:360px}
+.winstats{display:flex;justify-content:space-around;margin:14px 0 6px}
+.winstats div{display:flex;flex-direction:column}
+.winstats span{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.winstats small{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.6px}
+.winrank{font-size:15px;margin:10px 0 2px;color:#ffe27a}
+.winladder{font-size:13px;opacity:.8;margin:2px 0 8px}
+.statsbox{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13.5px;background:#0f151f;border-radius:12px;padding:11px}
+.statsbox span{opacity:.6}
+.statsbox b{font-variant-numeric:tabular-nums}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:1150;display:none}
+#confetti.on{display:block}
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);background:rgba(0,0,0,.82);
+  color:#fff;padding:9px 15px;border-radius:999px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:1300}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* breed scherm */
+@media (min-width:760px){
+  #board{max-width:900px;width:100%;margin:0 auto}
+  #bottombar{max-width:520px;margin:8px auto}
+  #topbar,#subbar{max-width:900px;width:100%;margin:0 auto}
+  .tool{font-size:12.5px}
+}

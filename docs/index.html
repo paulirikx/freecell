@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speel je mee FreeCell?</title>
+<link rel="icon" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#0b5c34">
+<meta name="description" content="FreeCell uitgelegd in twee minuten: alle kaarten liggen open, geen geluk, alleen denkwerk. Speel direct of haal de gratis app.">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff;line-height:1.6;
+    background:radial-gradient(ellipse at 50% 0%,#1a8f56 0%,#0d6438 42%,#053f22 100%);min-height:100vh}
+  .wrap{max-width:620px;margin:0 auto;padding:30px 18px 70px}
+  h1{font-size:30px;line-height:1.15;margin:0 0 6px;text-align:center}
+  .lead{text-align:center;opacity:.85;margin:0 auto 22px;max-width:440px}
+  h2{font-size:19px;margin:0 0 8px}
+  .card{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px;margin-bottom:14px}
+  p{margin:0 0 10px}
+  .fine{font-size:12.5px;opacity:.6}
+
+  /* de agent */
+  figure{margin:0 0 18px;position:relative}
+  figure img{width:100%;border-radius:18px;display:block;box-shadow:0 12px 34px rgba(0,0,0,.45)}
+  .balloon{position:absolute;right:3.5%;top:25%;max-width:44%;background:#fff;color:#14161c;border-radius:16px;
+    padding:11px 14px;font-weight:700;font-size:clamp(13px,3.6vw,19px);line-height:1.25;
+    box-shadow:0 8px 22px rgba(0,0,0,.35);transform:rotate(-2deg)}
+  .balloon::after{content:"";position:absolute;left:8%;bottom:-14px;border:9px solid transparent;
+    border-top-color:#fff;border-right-width:20px}
+  .balloon small{display:block;font-weight:600;font-size:.72em;opacity:.6;margin-top:3px}
+  figcaption{font-size:12.5px;opacity:.6;text-align:center;margin-top:8px}
+  .geen-foto{background:rgba(0,0,0,.3);border:1px dashed rgba(255,255,255,.25);border-radius:18px;padding:26px;
+    text-align:center}
+
+  /* mini-kaartjes */
+  .rij{display:flex;gap:6px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+  .k{width:46px;height:64px;background:#fdfbf5;color:#14161c;border-radius:6px;border:1px solid rgba(0,0,0,.35);
+    position:relative;font-weight:800;font-size:15px;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+  .k span{position:absolute;left:4px;top:2px;line-height:1.05;text-align:center}
+  .k b{display:block;font-size:13px;font-weight:800}
+  .k.rood{color:#c2172c}
+  .k.leeg{background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.35)}
+  .pijl{align-self:center;opacity:.7;font-size:20px}
+
+  ol,ul{margin:6px 0 0;padding-left:20px}
+  li{margin-bottom:7px}
+  .stappen li b{color:#ffe27a}
+  .knoppen{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+  a.btn{flex:1 1 200px;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.25);
+    background:#2a3342;color:#fff;border-radius:13px;padding:15px 12px;font-size:16px}
+  a.btn.primary{background:#28a35f;border-color:#57e194;font-weight:700}
+  .gratis{display:inline-block;background:#ffd54a;color:#1b2330;font-weight:800;font-size:10.5px;border-radius:999px;
+    padding:2px 8px;letter-spacing:.6px;text-transform:uppercase;vertical-align:middle;margin-left:6px}
+  .niveaus{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:10px}
+  .niv{background:rgba(255,255,255,.07);border-radius:13px;padding:11px 13px}
+  .niv b{display:block;margin-bottom:2px}
+  .niv small{opacity:.7;font-size:12.5px}
+  footer{text-align:center;margin-top:24px;font-size:13px;opacity:.7}
+  footer a{color:#8fe3b3}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <figure id="foto">
+    <img src="assets/agent-freecell.jpg" alt="Agent van de FreeCell-brigade voor het bureau" onerror="document.getElementById('foto').classList.add('weg')">
+    <div class="balloon">Speel je mee FreeCell?<small>— de FreeCell-brigade</small></div>
+    <figcaption>De FreeCell-brigade. Aanhouden hoeft niet, meespelen mag.</figcaption>
+  </figure>
+
+  <h1>Speel je mee FreeCell?</h1>
+  <p class="lead">Alle 52 kaarten liggen open op tafel. Geen geluk, geen verborgen kaarten, geen excuses:
+    bijna elk spel is te winnen. De vraag is alleen of jij het ziet.</p>
+
+  <div class="card">
+    <h2>Waar het om gaat</h2>
+    <p>Bovenin staan vier <b>aflegstapels</b>. Daar moet uiteindelijk elke kleur op volgorde in:
+      aas, twee, drie… tot en met de heer. Lukt dat met alle vier, dan heb je gewonnen.</p>
+    <div class="rij">
+      <div class="k"><span>A<b>♠</b></span></div>
+      <div class="k rood"><span>A<b>♥</b></span></div>
+      <div class="k rood"><span>A<b>♦</b></span></div>
+      <div class="k"><span>A<b>♣</b></span></div>
+      <span class="pijl">→</span>
+      <div class="k"><span>K<b>♠</b></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>De twee regels die je moet kennen</h2>
+    <p><b>1. Op tafel stapel je aflopend, om en om rood en zwart.</b> Een zwarte 7 mag dus op een rode 8.</p>
+    <div class="rij">
+      <div class="k rood"><span>8<b>♥</b></span></div>
+      <div class="k"><span>7<b>♠</b></span></div>
+      <div class="k rood"><span>6<b>♦</b></span></div>
+      <div class="k"><span>5<b>♣</b></span></div>
+    </div>
+    <p style="margin-top:14px"><b>2. Linksboven staan vier vrije cellen.</b> Dat zijn parkeerplaatsen: er past één kaart
+      in, en je haalt hem er later weer uit. Hoe meer cellen vol staan, hoe minder kaarten je in één keer kunt
+      verplaatsen — dus parkeer met beleid.</p>
+    <div class="rij">
+      <div class="k leeg"></div>
+      <div class="k"><span>J<b>♣</b></span></div>
+      <div class="k leeg"></div>
+      <div class="k leeg"></div>
+    </div>
+    <p class="fine" style="margin-top:10px">Een lege kolom is nog waardevoller dan een lege cel: daar mag álles op,
+      en hij verdubbelt hoeveel kaarten je in één beweging kunt slepen.</p>
+  </div>
+
+  <div class="card">
+    <h2>Zo bedien je het</h2>
+    <ul class="stappen">
+      <li><b>Tik</b> op een kaart en hij zoekt zelf de beste plek.</li>
+      <li><b>Tik twee keer</b> en hij gaat regelrecht naar de aflegstapel.</li>
+      <li><b>Sleep</b> als je het zelf beter weet; geldige plekken lichten geel op.</li>
+      <li><b>Vastgelopen?</b> Terug-knop draait zetten terug, de lamp geeft een hint en de bliksem legt in één klap
+        alles af wat kan.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Het wordt vanzelf moeilijker</h2>
+    <p>Je kiest zelf waar je begint, en daarbinnen klim je met elke gewonnen partij een trede hoger: zwaardere
+      beginposities, minder hints, minder terugdraaien en uiteindelijk zelfs een vrije cel minder. Win je snel, dan
+      spring je twee treden. Geef je op, dan zak je er één.</p>
+    <div class="niveaus">
+      <div class="niv"><b>🌱 Beginner</b><small>Rustige spellen, alle hulp aan</small></div>
+      <div class="niv"><b>⚔️ Gevorderd</b><small>Pittiger, hints op rantsoen</small></div>
+      <div class="niv"><b>🔥 Pro</b><small>Zwaar, en je staat er alleen voor</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Wie is de snelste?</h2>
+    <p>De klok loopt vanaf je eerste zet en telt je zetten mee. In de ranglijst zie je jouw lopende potje er
+      <i>live</i> tussen staan — en langzaam zakken, want de anderen bewegen niet meer. Elke deal heeft een nummer,
+      dus je kunt iemand precies dezelfde kaarten sturen: "haal jij #39911 onder de drie minuten?"</p>
+    <p class="fine">De ranglijst staat op je eigen apparaat. Wat je thuis doet, blijft thuis.</p>
+  </div>
+
+  <div class="card" id="app">
+    <h2>Op je telefoon <span class="gratis">gratis</span></h2>
+    <p>De Android-app is hetzelfde spel, maar dan zonder browser en zonder internet. Geen advertenties, geen account,
+      geen aankopen. Je tijden blijven op je eigen telefoon.</p>
+    <a class="btn primary" href="FreeCell.apk" download style="display:block;margin:12px 0 4px">
+      Download FreeCell voor Android <small style="opacity:.8;font-weight:400">(versie 1.0.0)</small>
+    </a>
+    <h2 style="margin-top:16px;font-size:16px">Installeren, stap voor stap</h2>
+    <ol>
+      <li>Tik op de knop hierboven. Je browser waarschuwt dat dit soort bestanden schade kan aanrichten — kies
+        <b>Toch downloaden</b>.</li>
+      <li>Open het gedownloade bestand.</li>
+      <li>Android vraagt eenmalig of deze browser apps mag installeren: zet dat aan en ga terug.</li>
+      <li>Tik op <b>Installeren</b>. Klaar.</li>
+    </ol>
+    <p class="fine" style="margin-top:10px">Die waarschuwingen komen doordat de app niet uit de Play Store komt.
+      Liever niets installeren? Speel in je browser en kies in het menu <b>Toevoegen aan startscherm</b> — dan speelt
+      het ook offline. Op een iPhone: Safari → <b>Deel → Zet op beginscherm</b>.</p>
+  </div>
+
+  <div class="knoppen">
+    <a class="btn primary" href="spelen/">Speel nu in je browser</a>
+    <a class="btn" href="#app">Android-app <span class="gratis">gratis</span></a>
+  </div>
+
+  <footer>
+    Gemaakt voor thuis, en voor iedereen die denkt dat hij sneller is. <br>
+    <a href="spelen/">Naar het spel →</a>
+  </footer>
+</div>
+<style>#foto.weg{display:none}</style>
+</body>
+</html>
