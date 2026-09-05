@@ -303,3 +303,22 @@ body.licht .online{color:#0d6438}
 .maker img{width:118px;height:auto;display:block}
 .maker span{font-size:12px;opacity:.75}
 .maker b{font-weight:700}
+
+/* foto bijsnijden */
+.overlay.boven{z-index:1400}
+.sheet.foto{max-width:400px}
+.knipper{width:min(74vw,300px);height:min(74vw,300px);margin:12px auto 6px;position:relative;border-radius:50%;
+  overflow:hidden;background:#0b0d12;touch-action:none;cursor:grab;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.knipper:active{cursor:grabbing}
+.knipper canvas{width:100%;height:100%;display:block}
+.knip-rand{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 3px rgba(255,255,255,.65) inset,0 0 0 2000px rgba(0,0,0,.35)}
+.zoomrij{display:flex;align-items:center;gap:10px;margin:6px 2px 2px;font-size:11.5px;opacity:.7}
+.zoomrij input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:26px;background:none;padding:0;
+  border:0;min-width:0}
+.zoomrij input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--paneel3)}
+.zoomrij input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--groen);border:2px solid #fff;margin-top:-9px}
+.zoomrij input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--paneel3)}
+.zoomrij input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--groen);
+  border:2px solid #fff}

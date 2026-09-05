@@ -71,29 +71,138 @@
       el.classList.remove('heeft');
     }
   }
-  /* Foto kiezen: verkleinen tot een vierkantje van 200px, zodat het in de
-     opslag van de browser past (een telefoonfoto is zo 4 MB). */
+  /* ---- foto kiezen en bijsnijden ----------------------------------------
+     Een telefoonfoto is groot en staat zelden goed. Daarom een echt scherm:
+     schuiven met een vinger, knijpen met twee, of de schuifbalk. Wat je in de
+     cirkel ziet, is precies wat er opgeslagen wordt (256x256, zodat het in de
+     opslag van de browser past). */
+  var knip = { img: null, zoom: 1, x: 0, y: 0, basis: 1, klaar: null, ptrs: {}, aantal: 0, vorig: null };
+
+  function knipTeken() {
+    var c = $('knip-canvas'), g = c.getContext('2d'), C = c.width;
+    g.fillStyle = '#0b0d12'; g.fillRect(0, 0, C, C);
+    if (!knip.img) return;
+    var s = knip.basis * knip.zoom;
+    var w = knip.img.width * s, h = knip.img.height * s;
+    knip.x = Math.min(0, Math.max(C - w, knip.x));
+    knip.y = Math.min(0, Math.max(C - h, knip.y));
+    g.drawImage(knip.img, knip.x, knip.y, w, h);
+  }
+
+  function knipZet(zoom, midX, midY) {
+    var C = $('knip-canvas').width;
+    zoom = Math.min(6, Math.max(1, zoom));
+    if (midX === undefined) { midX = C / 2; midY = C / 2; }
+    var f = zoom / knip.zoom;
+    knip.x = midX - (midX - knip.x) * f;
+    knip.y = midY - (midY - knip.y) * f;
+    knip.zoom = zoom;
+    $('knip-zoom').value = zoom;
+    knipTeken();
+  }
+
+  function knipOpen(bron, klaar) {
+    knip.klaar = klaar;
+    var toon = function (img) {
+      var C = $('knip-canvas').width;
+      knip.img = img;
+      knip.basis = Math.max(C / img.width, C / img.height);   // vullend
+      knip.zoom = 1;
+      knip.x = (C - img.width * knip.basis) / 2;
+      knip.y = (C - img.height * knip.basis) / 2;
+      $('knip-zoom').value = 1;
+      knipTeken();
+      $('ov-foto').classList.add('on');
+    };
+    if (window.createImageBitmap) {
+      createImageBitmap(bron, { imageOrientation: 'from-image' }).then(toon).catch(function () { viaImg(bron, toon); });
+    } else viaImg(bron, toon);
+  }
+
+  function viaImg(bestand, klaar) {
+    var lezer = new FileReader();
+    lezer.onload = function () {
+      var img = new Image();
+      img.onload = function () { klaar(img); };
+      img.onerror = function () { toast('Die foto kan ik niet lezen'); };
+      img.src = lezer.result;
+    };
+    lezer.readAsDataURL(bestand);
+  }
+
+  /* gebaren: één vinger schuift, twee vingers knijpen */
+  (function () {
+    var vlak = $('knipper');
+    function punten() {
+      var lijst = [];
+      for (var k in knip.ptrs) lijst.push(knip.ptrs[k]);
+      return lijst;
+    }
+    function naarCanvas(e) {
+      var r = vlak.getBoundingClientRect(), C = $('knip-canvas').width;
+      return { x: (e.clientX - r.left) / r.width * C, y: (e.clientY - r.top) / r.height * C };
+    }
+    vlak.addEventListener('pointerdown', function (e) {
+      knip.ptrs[e.pointerId] = naarCanvas(e);
+      knip.vorig = null;
+      try { vlak.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+    });
+    vlak.addEventListener('pointermove', function (e) {
+      if (!(e.pointerId in knip.ptrs)) return;
+      knip.ptrs[e.pointerId] = naarCanvas(e);
+      var p = punten();
+      if (p.length === 1) {
+        if (knip.vorig) { knip.x += p[0].x - knip.vorig.x; knip.y += p[0].y - knip.vorig.y; knipTeken(); }
+        knip.vorig = { x: p[0].x, y: p[0].y };
+      } else if (p.length >= 2) {
+        var dx = p[0].x - p[1].x, dy = p[0].y - p[1].y;
+        var afstand = Math.sqrt(dx * dx + dy * dy);
+        var mid = { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 };
+        if (knip.vorig && knip.vorig.afstand) {
+          knip.x += mid.x - knip.vorig.x; knip.y += mid.y - knip.vorig.y;
+          knipZet(knip.zoom * (afstand / knip.vorig.afstand), mid.x, mid.y);
+        }
+        knip.vorig = { x: mid.x, y: mid.y, afstand: afstand };
+      }
+      e.preventDefault();
+    });
+    function los(e) { delete knip.ptrs[e.pointerId]; knip.vorig = null; }
+    vlak.addEventListener('pointerup', los);
+    vlak.addEventListener('pointercancel', los);
+    vlak.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var p = naarCanvas(e);
+      knipZet(knip.zoom * (e.deltaY < 0 ? 1.12 : 0.89), p.x, p.y);
+    }, { passive: false });
+  })();
+
+  $('knip-zoom').addEventListener('input', function () { knipZet(parseFloat(this.value)); });
+  $('knip-af').onclick = function () { $('ov-foto').classList.remove('on'); knip.img = null; };
+  $('knip-ander').onclick = function () { $('ov-foto').classList.remove('on'); kiesFoto(knip.klaar); };
+  $('knip-klaar').onclick = function () {
+    if (!knip.img) return;
+    var C = $('knip-canvas').width, uit = 256, f = uit / C;
+    var c = document.createElement('canvas');
+    c.width = c.height = uit;
+    var g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, uit, uit);
+    var s = knip.basis * knip.zoom * f;
+    g.drawImage(knip.img, knip.x * f, knip.y * f, knip.img.width * s, knip.img.height * s);
+    P.foto = c.toDataURL('image/jpeg', 0.85);
+    Store.saveProfiel();
+    $('ov-foto').classList.remove('on');
+    knip.img = null;
+    if (knip.klaar) knip.klaar();
+  };
+
   function kiesFoto(klaar) {
     var inp = $('foto-input');
     inp.value = '';
     inp.onchange = function () {
       var f = inp.files && inp.files[0];
       if (!f) return;
-      var lezer = new FileReader();
-      lezer.onload = function () {
-        var img = new Image();
-        img.onload = function () {
-          var z = Math.min(img.width, img.height), c = document.createElement('canvas');
-          c.width = c.height = 200;
-          c.getContext('2d').drawImage(img, (img.width - z) / 2, (img.height - z) / 2, z, z, 0, 0, 200, 200);
-          P.foto = c.toDataURL('image/jpeg', 0.82);
-          Store.saveProfiel();
-          klaar();
-        };
-        img.onerror = function () { toast('Die foto kan ik niet lezen'); };
-        img.src = lezer.result;
-      };
-      lezer.readAsDataURL(f);
+      knipOpen(f, klaar);
     };
     inp.click();
   }
@@ -767,6 +876,12 @@
     if (!finished && st && st.moves > 0) startTimerIfNeeded();
   }
   document.addEventListener('click', function (e) {
+    // Het bijsnijscherm ligt bovenop een ander venster: naast klikken sluit
+    // alleen dat scherm, niet wat eronder ligt.
+    if ($('ov-foto').classList.contains('on')) {
+      if (e.target.id === 'ov-foto') { $('ov-foto').classList.remove('on'); knip.img = null; }
+      return;
+    }
     if (e.target.hasAttribute && e.target.hasAttribute('data-close')) close();
     if (e.target.classList && e.target.classList.contains('overlay')) close();
   });
@@ -1087,7 +1202,10 @@
   document.addEventListener('keydown', function (e) {
     if (e.target.tagName === 'INPUT') return;
     var k = e.key.toLowerCase();
-    if (k === 'escape') close();
+    if (k === 'escape') {
+      if ($('ov-foto').classList.contains('on')) { $('ov-foto').classList.remove('on'); knip.img = null; }
+      else close();
+    }
     else if (k === 'u' || k === 'z') undo();
     else if (k === 'h') hint();
     else if (k === 'a' || k === ' ') { e.preventDefault(); autoFinish(); }

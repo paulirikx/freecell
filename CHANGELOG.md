@@ -4,6 +4,12 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.4.2 — 5 september 2026
+
+- Een foto toevoegen gaat nu in een groot scherm: schuif de foto op zijn plek,
+  knijp met twee vingers om in of uit te zoomen, of gebruik de schuifbalk. Wat
+  je in de cirkel ziet is precies wat er komt te staan.
+
 ## 1.4.1 — 5 september 2026
 
 - Het gedownloade bestand heet nu FreeCell-1.4.1.apk, zodat je op je telefoon

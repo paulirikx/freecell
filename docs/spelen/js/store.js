@@ -3,7 +3,7 @@
    ============================================================ */
 var Store = (function () {
 
-  var VERSION = '1.4.1';
+  var VERSION = '1.4.2';
 
   function load(key, def) {
     try {

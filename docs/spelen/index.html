@@ -97,6 +97,30 @@
   </div>
 </div>
 
+<div class="overlay boven" id="ov-foto">
+  <div class="sheet foto">
+    <h2>Foto bijsnijden</h2>
+    <p class="hintline" id="knip-uitleg">Sleep de foto op zijn plek. Knijp met twee vingers om in of uit te zoomen
+      — of gebruik de schuif eronder.</p>
+    <div class="knipper" id="knipper">
+      <canvas id="knip-canvas" width="640" height="640"></canvas>
+      <div class="knip-rand"></div>
+    </div>
+    <div class="zoomrij">
+      <span>klein</span>
+      <input type="range" id="knip-zoom" min="1" max="6" step="0.01" value="1" aria-label="Zoom">
+      <span>groot</span>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="knip-klaar">Deze gebruiken</button>
+      <button class="btn" id="knip-af">Annuleren</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn small2" id="knip-ander">Andere foto kiezen</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="ov-update">
   <div class="sheet">
     <h2>Nieuwe versie <span id="up-versie"></span></h2>

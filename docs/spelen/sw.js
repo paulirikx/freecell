@@ -2,7 +2,7 @@
    Bij elke nieuwe versie hoort een nieuwe CACHE-naam, anders blijven mensen
    op de oude bestanden hangen. Het versienummer wordt bij het bouwen
    ingevuld vanuit package.json. */
-var CACHE = 'freecell-1.4.1';
+var CACHE = 'freecell-1.4.2';
 var BESTANDEN = [
   './',
   './index.html',
