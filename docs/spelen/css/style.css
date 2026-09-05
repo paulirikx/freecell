@@ -37,7 +37,11 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
 .pill:active{transform:scale(.96)}
 
 /* ---------- speelveld ---------- */
-#board{flex:1;min-height:0;padding:0 6px;display:flex;flex-direction:column;gap:8px}
+/* touch-action:none is wat slepen met de vinger mogelijk maakt: zonder dit
+   pakt de browser de veegbeweging af zodra je een kaart verschuift. */
+#board{flex:1;min-height:0;padding:0 6px;display:flex;flex-direction:column;gap:8px;
+  touch-action:none;-webkit-touch-callout:none}
+#board .card,#board .pile{touch-action:none;-webkit-touch-callout:none;-webkit-user-drag:none}
 #topzone,#tableau{display:grid;grid-template-columns:repeat(8,1fr);gap:var(--gap,6px)}
 #tableau{flex:1;min-height:0;position:relative}
 body.lefty #topzone{direction:rtl}
@@ -142,6 +146,21 @@ input[type=checkbox]:checked::after{left:22px}
 .btn:active{transform:scale(.98)}
 .fineprint{font-size:11.5px;opacity:.55;margin:12px 0 0;line-height:1.45}
 .hintline{font-size:13px;opacity:.75;line-height:1.5;margin:6px 0 0}
+
+/* profiel */
+.avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;
+  background:#2a3342;border:1px solid rgba(255,255,255,.3);color:#fff;font-weight:800;flex:0 0 auto;
+  background-size:cover;background-position:center;cursor:pointer;padding:0;font-family:inherit}
+.avatar.mini{width:20px;height:20px;font-size:9.5px;border-width:1px}
+.avatar.rij{width:28px;height:28px;font-size:12px;cursor:default}
+.avatar.groot{width:74px;height:74px;font-size:26px;border:2px dashed rgba(255,255,255,.35)}
+.avatar.groot.heeft{border-style:solid}
+.pill-ik{display:flex;align-items:center;gap:6px;padding-left:5px}
+.profiel{display:flex;gap:12px;align-items:center}
+.profiel-velden{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.profiel-velden input{width:100%;max-width:none}
+.btn.small2{padding:9px 8px;font-size:13.5px}
+.lb .av{width:38px;padding-right:0}
 
 /* niveaus */
 .levels{display:flex;gap:8px}

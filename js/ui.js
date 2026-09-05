@@ -44,6 +44,60 @@
     clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('on'); }, 2200);
   }
 
+  /* ---------------- profiel ---------------- */
+  var P = Store.profiel;
+  function naam() { return P.naam || 'Speler'; }
+  function initialen(n) {
+    var d = String(n || '?').trim().split(/\s+/);
+    return ((d[0] || '?')[0] + (d.length > 1 ? d[d.length - 1][0] : '')).toUpperCase();
+  }
+  function kleurVan(n) {
+    var h = 0, i;
+    for (i = 0; i < String(n).length; i++) h = (h * 31 + String(n).charCodeAt(i)) % 360;
+    return 'hsl(' + h + ',52%,38%)';
+  }
+  /* Zet een avatar in een element: eigen foto als die er is, anders initialen. */
+  function zetAvatar(el, n, foto, eigen) {
+    if (!el) return;
+    var f = foto || (eigen && P.foto) || '';
+    if (f) {
+      el.style.backgroundImage = 'url(' + f + ')';
+      el.textContent = '';
+      el.classList.add('heeft');
+    } else {
+      el.style.backgroundImage = '';
+      el.style.background = P.naam ? kleurVan(n) : 'rgba(255,255,255,.10)';
+      el.textContent = P.naam ? initialen(n) : '♠';   // nog geen naam: neutraal
+      el.classList.remove('heeft');
+    }
+  }
+  /* Foto kiezen: verkleinen tot een vierkantje van 200px, zodat het in de
+     opslag van de browser past (een telefoonfoto is zo 4 MB). */
+  function kiesFoto(klaar) {
+    var inp = $('foto-input');
+    inp.value = '';
+    inp.onchange = function () {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      var lezer = new FileReader();
+      lezer.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var z = Math.min(img.width, img.height), c = document.createElement('canvas');
+          c.width = c.height = 200;
+          c.getContext('2d').drawImage(img, (img.width - z) / 2, (img.height - z) / 2, z, z, 0, 0, 200, 200);
+          P.foto = c.toDataURL('image/jpeg', 0.82);
+          Store.saveProfiel();
+          klaar();
+        };
+        img.onerror = function () { toast('Die foto kan ik niet lezen'); };
+        img.src = lezer.result;
+      };
+      lezer.readAsDataURL(f);
+    };
+    inp.click();
+  }
+
   /* ---------------- geluid ---------------- */
   var actx = null;
   function beep(freq, dur, type, vol) {
@@ -351,6 +405,8 @@
     };
     drag.offX = e.clientX - drag.rect.left;
     drag.offY = e.clientY - drag.rect.top;
+    // met een vinger zit de kaart onder je hand: teken hem iets hoger
+    drag.lift = (e.pointerType === 'touch') ? Math.round(drag.rect.height * 0.55) : 0;
     try { cardEl2.setPointerCapture(e.pointerId); } catch (err) {}
     drag.pointerId = e.pointerId;
     e.preventDefault();
@@ -378,9 +434,10 @@
   function onMove(e) {
     if (!drag) return;
     var dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
-    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 7) return;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
     if (!drag.moved) { drag.moved = true; beginDrag(); }
-    dragLayer.style.transform = 'translate(' + (e.clientX - drag.offX) + 'px,' + (e.clientY - drag.offY) + 'px)';
+    dragLayer.style.transform = 'translate(' + (e.clientX - drag.offX) + 'px,' +
+      (e.clientY - drag.offY - drag.lift) + 'px)';
     e.preventDefault();
   }
 
@@ -393,7 +450,8 @@
     dragLayer.innerHTML = ''; dragLayer.style.transform = '';
 
     if (d.moved) {
-      var target = document.elementFromPoint(e.clientX, e.clientY);
+      var mikY = e.clientY - d.lift + (d.lift ? 10 : 0);
+      var target = document.elementFromPoint(e.clientX, mikY);
       var p = target && target.closest ? target.closest('[data-pile]') : null;
       if (p) {
         var parts = p.dataset.pile.split(':');
@@ -483,7 +541,7 @@
     Store.recordWin(ms, st.moves);
 
     var entry = {
-      name: (S.name || 'Speler').slice(0, 14), ms: ms, moves: st.moves, score: total,
+      name: naam().slice(0, 14), ms: ms, moves: st.moves, score: total,
       deal: st.deal, level: cfg.level, rung: cfg.rung, cells: cfg.cells,
       daily: isDaily, hints: used.hints, undos: used.undos, ts: Date.now()
     };
@@ -520,8 +578,7 @@
       : 'Hoogste trede van ' + cfg.levelName + ' bereikt';
     if (newly.length) lad += ' · ' + (newly.length > 1 ? newly.length + ' nieuwe doelen' : '1 nieuw doel') + ' behaald';
     $('win-ladder').textContent = lad;
-    $('win-namerow').style.display = S.name ? 'none' : '';
-    $('win-name').value = S.name || '';
+    $('win-namerow').style.display = 'none';
     localStorage.removeItem('fc.game');
     sfx.win(); confetti();
     open('ov-win');
@@ -617,6 +674,7 @@
     if (id === 'ov-board') { renderBoardList(); lbTimer = setInterval(renderBoardList, 1000); }
   }
   function close() {
+    if (!P.naam && $('ov-hallo').classList.contains('on')) { $('hallo-naam').focus(); return; }
     document.querySelectorAll('.overlay.on').forEach(function (o) { o.classList.remove('on'); });
     clearInterval(lbTimer); lbTimer = null;
     if (!finished && st && st.moves > 0) startTimerIfNeeded();
@@ -642,7 +700,7 @@
     var list = Store.filtered(lbScope, ctx).slice();
     var live = null;
     if (!finished && st.moves > 0) {
-      live = { name: (S.name || 'Jij') + ' (bezig)', ms: elapsed(), moves: st.moves,
+      live = { name: naam() + ' (bezig)', ms: elapsed(), moves: st.moves,
                score: st.score, deal: st.deal, level: cfg.level, rung: cfg.rung,
                daily: isDaily, ts: Date.now(), _live: true };
       if (lbScope === 'all' || (lbScope === 'level' && live.level === ctx.level) ||
@@ -650,16 +708,21 @@
     }
     list = Store.sortBy(list, lbSort);
     var tb = $('lb-body');
-    var head = '<tr class="head"><td class="pos">#</td><td class="nm">Speler</td>' +
+    var head = '<tr class="head"><td class="pos">#</td><td class="av"></td><td class="nm">Speler</td>' +
                '<td class="num">Tijd</td><td class="num">Zetten</td><td class="num">Score</td></tr>';
-    if (!list.length) { tb.innerHTML = '<tr><td class="empty" colspan="5">Nog geen tijden — win een potje en je staat hier.</td></tr>'; }
+    if (!list.length) { tb.innerHTML = '<tr><td class="empty" colspan="6">Nog geen tijden — win een potje en je staat hier.</td></tr>'; }
     else {
       var html = head;
       list.slice(0, 60).forEach(function (s, i) {
-        var cls = (s._live ? 'live ' : '') + (i === 0 ? 'top1 ' : '') + (!s._live && s.name === S.name ? 'me' : '');
+        var cls = (s._live ? 'live ' : '') + (i === 0 ? 'top1 ' : '') + (!s._live && s.name === naam() ? 'me' : '');
         var sub = (Store.LEVELS[s.level] ? Store.LEVELS[s.level].icon : '') + ' trede ' + (s.rung || 1) +
                   ' · #' + s.deal + (s._live ? '' : ' · ' + ago(s.ts));
+        var eigen = s._live || s.name === naam();
+        var av = (eigen && P.foto)
+          ? '<span class="avatar rij heeft" style="background-image:url(' + P.foto + ')"></span>'
+          : '<span class="avatar rij" style="background:' + kleurVan(s.name) + '">' + esc(initialen(s.name)) + '</span>';
         html += '<tr class="' + cls + '"><td class="pos">' + (i + 1) + '</td>' +
+          '<td class="av">' + av + '</td>' +
           '<td class="nm">' + esc(s.name) + '<i>' + sub + '</i></td>' +
           '<td class="num">' + fmt(s.ms) + '</td>' +
           '<td class="num">' + s.moves + '</td>' +
@@ -704,7 +767,9 @@
                ['big', 'Groot & simpel'], ['night', 'Donker']];
 
   function renderSettings() {
-    $('set-name').value = S.name || '';
+    $('set-name').value = P.naam || '';
+    $('set-tekst').value = P.tekst || '';
+    zetAvatar($('set-avatar'), naam(), P.foto, true);
     $('set-bg').innerHTML = BGS.map(function (b) {
       return '<button class="chip' + (S.bg === b[0] ? ' on' : '') + '" data-bg="' + b[0] + '">' +
              '<span class="sw" style="background:' + b[2] + '"></span>' + b[1] + '</button>';
@@ -747,7 +812,23 @@
     var b = e.target.closest('[data-let]'); if (!b) return;
     S.letters = b.dataset.let; Store.saveSettings(); renderSettings(); render(false);
   });
-  $('set-name').addEventListener('change', function () { S.name = this.value.trim(); Store.saveSettings(); });
+  function profielGewijzigd() {
+    Store.saveProfiel();
+    $('pill-ik').style.display = P.naam ? '' : 'none';
+    zetAvatar($('set-avatar'), naam(), P.foto, true);
+    zetAvatar($('ik-avatar'), naam(), P.foto, true);
+    $('ik-naam').textContent = naam();
+  }
+  $('set-name').addEventListener('input', function () {
+    P.naam = this.value.trim().slice(0, 14); profielGewijzigd();
+  });
+  $('set-tekst').addEventListener('input', function () {
+    P.tekst = this.value.trim().slice(0, 34); profielGewijzigd();
+  });
+  $('set-avatar').onclick = function () { kiesFoto(profielGewijzigd); };
+  $('btn-foto').onclick = function () { kiesFoto(profielGewijzigd); };
+  $('btn-foto-weg').onclick = function () { P.foto = ''; profielGewijzigd(); toast('Foto weggehaald'); };
+  $('pill-ik').onclick = function () { renderSettings(); open('ov-settings'); };
   ['autoplay', 'sound', 'anim', 'lefty'].forEach(function (k) {
     $('set-' + k).addEventListener('change', function () {
       S[k] = this.checked; Store.saveSettings(); applyLook();
@@ -804,11 +885,9 @@
     giveUpIfBusy(); close(); newGame(n, false);
   };
   $('btn-win-next').onclick = function () {
-    if (!S.name) { S.name = ($('win-name').value || 'Speler').trim().slice(0, 14); Store.saveSettings(); }
     close(); newGame(null, false);
   };
   $('btn-win-board').onclick = function () {
-    if (!S.name) { S.name = ($('win-name').value || 'Speler').trim().slice(0, 14); Store.saveSettings(); }
     open('ov-board');
   };
   $('btn-share-deal').onclick = shareDeal;
@@ -898,9 +977,45 @@
     } catch (e) {}
   })();
 
+  /* ---------------- eerste start: wie ben jij? ---------------- */
+  function toonWelkom() {
+    zetAvatar($('hallo-avatar'), naam(), P.foto, true);
+    $('hallo-naam').value = P.naam || '';
+    $('hallo-tekst').value = P.tekst || '';
+    $('hallo-start').disabled = !$('hallo-naam').value.trim();
+    open('ov-hallo');
+    setTimeout(function () { $('hallo-naam').focus(); }, 250);
+  }
+  $('hallo-naam').addEventListener('input', function () {
+    $('hallo-start').disabled = !this.value.trim();
+  });
+  $('hallo-naam').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && this.value.trim()) $('hallo-start').click();
+  });
+  $('hallo-avatar').onclick = function () {
+    kiesFoto(function () { zetAvatar($('hallo-avatar'), naam(), P.foto, true); });
+  };
+  $('hallo-foto').onclick = $('hallo-avatar').onclick;
+  $('hallo-start').onclick = function () {
+    var n = $('hallo-naam').value.trim().slice(0, 14);
+    if (!n) return;
+    P.naam = n;
+    P.tekst = $('hallo-tekst').value.trim().slice(0, 34);
+    Store.saveProfiel();
+    toonIk();
+    close();
+    toast('Veel plezier, ' + P.naam + '!');
+  };
+  function toonIk() {
+    $('pill-ik').style.display = P.naam ? '' : 'none';
+    zetAvatar($('ik-avatar'), naam(), P.foto, true);
+    $('ik-naam').textContent = naam();
+  }
+
   /* ---------------- start ---------------- */
   applyLook();
   sizeBoard();
+  toonIk();
   cfg = Store.currentConfig();
   var uitdaging = dealFromUrl();
   if (uitdaging) {
@@ -908,4 +1023,5 @@
     setTimeout(function () { toast('Uitdaging geopend: spel #' + uitdaging); }, 2400);
   } else if (!resumeGame()) newGame(null, false);
   renderLadderUI();
+  if (!P.naam) toonWelkom();
 })();

@@ -31,6 +31,14 @@ var Store = (function () {
   try { scores = JSON.parse(localStorage.getItem('fc.scores') || '[]') || []; } catch (e) { scores = []; }
   var goals = load('fc.goals', {});
 
+  /* Het profiel: naam is verplicht (bij de eerste start gevraagd), foto en
+     tekst zijn optioneel. De id is alvast een vast kenmerk van deze speler,
+     handig als er ooit een gedeelde ranglijst komt. */
+  var profiel = load('fc.profiel', { id: '', naam: '', foto: '', tekst: '' });
+  if (!profiel.id) profiel.id = 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  if (!profiel.naam && settings.name) profiel.naam = settings.name;   // oude instelling overnemen
+  save('fc.profiel', profiel);
+
   /* ---------- niveaus ---------- */
   var LEVELS = {
     beginner: {
@@ -151,7 +159,8 @@ var Store = (function () {
     scores = []; save('fc.scores', scores);
     stats = { played: 0, won: 0, streak: 0, bestStreak: 0, bestMs: null, bestMoves: null, totalMs: 0 };
     save('fc.stats', stats);
-    goals = {}; save('fc.goals', goals);
+    for (var k in goals) delete goals[k];   // hetzelfde object leegmaken: de export wijst ernaar
+    save('fc.goals', goals);
     ladder = { beginner: 1, gevorderd: 1, pro: 1 }; save('fc.ladder', ladder);
   }
 
@@ -160,7 +169,9 @@ var Store = (function () {
     settings: settings, ladder: ladder, goals: goals,
     get stats() { return stats; },
     get scores() { return scores; },
+    profiel: profiel,
     saveSettings: function () { save('fc.settings', settings); },
+    saveProfiel: function () { settings.name = profiel.naam; save('fc.settings', settings); save('fc.profiel', profiel); },
     rungConfig: rungConfig, currentConfig: currentConfig, bumpLadder: bumpLadder,
     addScore: addScore, filtered: filtered, sortBy: sortBy,
     recordStart: recordStart, recordWin: recordWin, recordLoss: recordLoss,

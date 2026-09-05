@@ -4,6 +4,16 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.1.0 — 5 september 2026
+
+- Slepen met de vinger werkte niet op de telefoon: de browser pakte de
+  veegbeweging af. `touch-action: none` op het speelveld lost dat op, en een
+  gesleepte stapel wordt nu iets boven je vinger getekend zodat je ziet wat je
+  vasthebt.
+- Spelersprofiel: bij de eerste start vraagt het spel je naam (verplicht, later
+  te wijzigen), met optioneel een foto en een regel over jezelf. Je naam en
+  avatar staan in de ranglijst en in de balk bovenin.
+
 ## 1.0.0 — 5 september 2026
 
 Eerste versie.
