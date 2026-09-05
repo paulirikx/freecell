@@ -74,7 +74,7 @@ function versieInfo() {
       else if (nieuws.length && regel.startsWith('  ')) nieuws[nieuws.length - 1] += ' ' + regel.trim();
     }
   } catch (e) { /* changelog is niet verplicht */ }
-  return { versie, nieuws, apk: 'FreeCell.apk' };
+  return { versie, nieuws, apk: `FreeCell-${versie}.apk` };
 }
 
 /* ---- de app (Capacitor) ---- */
@@ -110,6 +110,10 @@ function web(doel) {
   fs.writeFileSync(path.join(doel, 'versie.txt'), versie + '\n');
 
   if (fs.existsSync(apkBron)) {
+    // Twee namen: eentje met het versienummer erin (zodat je op je telefoon
+    // ziet wat je hebt gedownload) en eentje met een vaste naam, zodat oude
+    // links en QR-codes altijd de nieuwste versie geven.
+    fs.copyFileSync(apkBron, path.join(doel, `FreeCell-${versie}.apk`));
     fs.copyFileSync(apkBron, path.join(doel, 'FreeCell.apk'));
   } else {
     console.warn(`  ! apk/FreeCell-${versie}.apk ontbreekt — draai eerst: bun run apk:release`);

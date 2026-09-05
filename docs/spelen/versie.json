@@ -1,8 +1,7 @@
 {
-  "versie": "1.4.0",
+  "versie": "1.4.1",
   "nieuws": [
-    "Het logo van grAItt Studio staat onderaan de pagina en in het instellingenscherm.",
-    "Op de downloadpagina staat hoeveel verschillende mensen de app al hebben opgehaald."
+    "Het gedownloade bestand heet nu FreeCell-1.4.1.apk, zodat je op je telefoon ziet welke versie je hebt."
   ],
-  "apk": "FreeCell.apk"
+  "apk": "FreeCell-1.4.1.apk"
 }

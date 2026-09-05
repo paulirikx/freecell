@@ -4,6 +4,11 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.4.1 — 5 september 2026
+
+- Het gedownloade bestand heet nu FreeCell-1.4.1.apk, zodat je op je telefoon
+  ziet welke versie je hebt.
+
 ## 1.4.0 — 5 september 2026
 
 - Het logo van grAItt Studio staat onderaan de pagina en in het
