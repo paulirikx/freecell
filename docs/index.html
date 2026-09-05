@@ -52,6 +52,15 @@
   a.btn.primary{background:#28a35f;border-color:#57e194;font-weight:700}
   .gratis{display:inline-block;background:#ffd54a;color:#1b2330;font-weight:800;font-size:10.5px;border-radius:999px;
     padding:2px 8px;letter-spacing:.6px;text-transform:uppercase;vertical-align:middle;margin-left:6px}
+  .codekaart{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px;
+    text-align:center;margin:14px 0 10px}
+  .codelabel{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;opacity:.65}
+  .codekaart b{display:block;font-size:32px;letter-spacing:5px;font-weight:800;margin-top:2px}
+  .coderij{display:flex;gap:9px;margin-top:10px}
+  .coderij input{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.25);color:#fff;
+    border-radius:13px;padding:14px 12px;font-size:18px;font-family:inherit;text-align:center;
+    text-transform:uppercase;letter-spacing:4px;font-weight:700}
+  .coderij .btn{flex:0 0 auto}
   .niveaus{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:10px}
   .niv{background:rgba(255,255,255,.07);border-radius:13px;padding:11px 13px}
   .niv b{display:block;margin-bottom:2px}
@@ -140,12 +149,41 @@
     <p class="fine">De ranglijst staat op je eigen apparaat. Wat je thuis doet, blijft thuis.</p>
   </div>
 
+  <div class="card" id="samen">
+    <h2>Tegen elkaar spelen</h2>
+    <p>Iedereen speelt op zijn eigen telefoon, maar wel in dezelfde lijst. Je maakt één keer een <b>club</b> en
+      deelt de code; wie hem heeft, ziet jullie gezamenlijke ranglijst — op tijd, op zetten of op score — en ziet
+      ook wie er op dat moment aan het spelen is.</p>
+    <ol>
+      <li>Open het spel en tik linksboven op je naam.</li>
+      <li>Bij <b>Samen spelen</b>: <b>Club maken</b>. Je krijgt een code van zes tekens.</li>
+      <li>Stuur de uitnodiging door. Wie erop tikt, zit meteen in jullie club.</li>
+    </ol>
+    <div id="jouwclub" hidden>
+      <div class="codekaart">
+        <span class="codelabel">Jouw uitnodigingscode</span>
+        <b id="code"></b>
+      </div>
+      <a class="btn primary" id="deel" href="#">Uitnodiging delen</a>
+    </div>
+    <div id="geenclub">
+      <p style="margin-top:14px"><b>Heb je een code gekregen?</b> Vul hem hier in, dan begin je meteen in de
+        juiste club.</p>
+      <div class="coderij">
+        <input id="invoer" maxlength="6" placeholder="ABC123" autocapitalize="characters" autocomplete="off">
+        <a class="btn" id="mee" href="spelen/">Meedoen</a>
+      </div>
+    </div>
+    <p class="fine">Er komt geen account aan te pas en er wordt niets van je bewaard behalve de naam en de tijden
+      die je zelf instuurt. Wie de code niet heeft, ziet jullie lijst niet.</p>
+  </div>
+
   <div class="card" id="app">
     <h2>Op je telefoon <span class="gratis">gratis</span></h2>
     <p>De Android-app is hetzelfde spel, maar dan zonder browser en zonder internet. Geen advertenties, geen account,
       geen aankopen. Je tijden blijven op je eigen telefoon.</p>
     <a class="btn primary" href="FreeCell.apk" download style="display:block;margin:12px 0 4px">
-      Download FreeCell voor Android <small style="opacity:.8;font-weight:400">(versie 1.2.0)</small>
+      Download FreeCell voor Android <small style="opacity:.8;font-weight:400">(versie 1.3.0)</small>
     </a>
     <h2 style="margin-top:16px;font-size:16px">Installeren, stap voor stap</h2>
     <ol>
@@ -171,5 +209,37 @@
   </footer>
 </div>
 <style>#foto.weg{display:none}</style>
+<script>
+/* De landingspagina en het spel staan op hetzelfde adres, dus we kunnen hier
+   laten zien in welke club je zit. Er wordt niets opgehaald of verstuurd. */
+(function () {
+  var instellingen = {};
+  try { instellingen = JSON.parse(localStorage.getItem('fc.settings') || '{}') || {}; } catch (e) {}
+  var code = instellingen.club;
+  if (code) {
+    document.getElementById('jouwclub').hidden = false;
+    document.getElementById('geenclub').hidden = true;
+    document.getElementById('code').textContent = code;
+    var link = location.origin + location.pathname.replace(/index\.html$/, '') + 'spelen/?club=' + code;
+    var tekst = 'Doe mee met FreeCell! Onze code is ' + code + '.';
+    document.getElementById('deel').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (navigator.share) { navigator.share({ title: 'FreeCell', text: tekst, url: link }); return; }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(tekst + ' ' + link);
+        this.textContent = 'Gekopieerd — plak hem in een appje';
+      } else prompt('Deel deze uitnodiging:', tekst + ' ' + link);
+    });
+  }
+  var invoer = document.getElementById('invoer'), mee = document.getElementById('mee');
+  function bij() {
+    var c = (invoer.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    invoer.value = c;
+    mee.href = c.length === 6 ? 'spelen/?club=' + c : 'spelen/';
+  }
+  invoer.addEventListener('input', bij);
+  invoer.addEventListener('keydown', function (e) { if (e.key === 'Enter') { bij(); location.href = mee.href; } });
+})();
+</script>
 </body>
 </html>

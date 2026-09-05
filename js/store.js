@@ -21,6 +21,7 @@ var Store = (function () {
     name: '', bg: 'felt', deck: 'classic', letters: 'jqk',
     autoplay: true, sound: true, anim: true, lefty: false,
     thema: 'auto',            // auto volgt de telefoon; anders 'licht' of 'donker'
+    club: '', clubNaam: '', clubDelen: true,
     level: 'beginner'
   });
 

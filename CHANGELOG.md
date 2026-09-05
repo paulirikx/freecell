@@ -4,6 +4,15 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.3.0 — 5 september 2026
+
+- Samen spelen: maak een club, deel de code of de uitnodigingslink, en iedereen
+  die meedoet staat in dezelfde ranglijst — op tijd, op zetten of op score.
+- Je ziet in die lijst ook wie er op dat moment aan het spelen is.
+- Wie de code niet heeft, ziet jullie lijst niet; er komt geen account aan te
+  pas en alleen je naam en je tijden gaan mee.
+- Op de webpagina staat uitleg over samen spelen, met je eigen code erbij.
+
 ## 1.2.0 — 5 september 2026
 
 - Mijn menu: tik linksboven op je naam voor je gegevens (naam, foto, een regel

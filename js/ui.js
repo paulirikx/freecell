@@ -546,6 +546,7 @@
       daily: isDaily, hints: used.hints, undos: used.undos, ts: Date.now()
     };
     Store.addScore(entry);
+    stuurScoreOnline(entry);
 
     var fast = sec <= cfg.target * 0.6;
     var delta = Store.bumpLadder(cfg.level, 'win', fast);
@@ -640,6 +641,82 @@
     return (n >= 1 && n <= 1000000) ? n : null;
   }
 
+  /* ---------------- club: samen spelen ---------------- */
+  var online = { lijst: [], geladen: 0, bezig: false, fout: '' };
+
+  function heeftClub() { return !!S.club; }
+
+  function toonClub() {
+    var aan = heeftClub();
+    $('club-uit').style.display = aan ? 'none' : '';
+    $('club-aan').style.display = aan ? '' : 'none';
+    if (aan) {
+      $('club-toon').textContent = S.club;
+      $('club-naam').textContent = S.clubNaam || '';
+      $('club-delen').checked = S.clubDelen !== false;
+    }
+  }
+
+  $('club-maak').onclick = function () {
+    var knop = this; knop.disabled = true; knop.textContent = 'Bezig…';
+    Online.maakClub((P.naam ? P.naam + 's club' : 'Onze club')).then(function (c) {
+      knop.disabled = false; knop.textContent = 'Club maken';
+      if (!c) { toast('Dat lukte niet'); return; }
+      S.club = c.code; S.clubNaam = c.naam; S.clubDelen = true;
+      Store.saveSettings(); toonClub(); pingNu();
+      toast('Club ' + c.code + ' is klaar — deel de uitnodiging');
+    }).catch(function () {
+      knop.disabled = false; knop.textContent = 'Club maken';
+      toast('Geen verbinding — probeer het zo nog eens');
+    });
+  };
+
+  function doeMee(code, stil) {
+    code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (code.length !== 6) { if (!stil) toast('Een code bestaat uit 6 tekens'); return; }
+    Online.zoekClub(code).then(function (c) {
+      if (!c) { if (!stil) toast('Die code ken ik niet'); return; }
+      S.club = c.code; S.clubNaam = c.naam; S.clubDelen = true;
+      Store.saveSettings(); toonClub(); pingNu();
+      toast('Je speelt nu mee met ' + (c.naam || c.code));
+    }).catch(function () { if (!stil) toast('Geen verbinding'); });
+  }
+  $('club-mee').onclick = function () { doeMee($('club-code').value); };
+  $('club-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doeMee(this.value); });
+
+  $('club-weg').onclick = function () {
+    S.club = ''; S.clubNaam = ''; Store.saveSettings(); toonClub();
+    toast('Je doet niet meer mee aan de clubranglijst');
+  };
+  $('club-delen').addEventListener('change', function () {
+    S.clubDelen = this.checked; Store.saveSettings();
+  });
+  $('club-deel').onclick = function () {
+    var url = shareUrl(st.deal) + '&club=' + S.club;
+    var tekst = 'Doe mee met FreeCell! Onze code is ' + S.club + '.';
+    if (navigator.share) navigator.share({ title: 'FreeCell', text: tekst, url: url }).catch(function () {});
+    else if (navigator.clipboard) navigator.clipboard.writeText(tekst + ' ' + url)
+      .then(function () { toast('Uitnodiging gekopieerd'); });
+    else prompt('Deel deze uitnodiging:', tekst + ' ' + url);
+  };
+
+  /* Laat de club weten dat je er bent (en of je aan het spelen bent). */
+  function pingNu() {
+    if (!heeftClub() || document.hidden) return Promise.resolve();
+    return Online.ping(S.club, P.id, naam(), timer.running, st ? st.deal : null).catch(function () {});
+  }
+  setInterval(pingNu, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) pingNu(); });
+
+  function stuurScoreOnline(entry) {
+    if (!heeftClub() || S.clubDelen === false) return;
+    Online.stuurScore(S.club, {
+      speler_id: P.id, naam: entry.name, tekst: P.tekst || '', ms: entry.ms, moves: entry.moves,
+      score: entry.score, deal: entry.deal, level: entry.level, rung: entry.rung,
+      cells: entry.cells, hints: entry.hints, undos: entry.undos, daily: entry.daily
+    }).catch(function () { /* stil: het staat lokaal al opgeslagen */ });
+  }
+
   /* ---------------- confetti ---------------- */
   function confetti() {
     var cv = $('confetti'), ctx = cv.getContext('2d');
@@ -671,7 +748,17 @@
     document.querySelectorAll('.overlay.on').forEach(function (o) { o.classList.remove('on'); });
     $(id).classList.add('on');
     if (id !== 'ov-win') pauseTimer();
-    if (id === 'ov-board') { renderBoardList(); lbTimer = setInterval(renderBoardList, 1000); }
+    if (id === 'ov-board') {
+      if (heeftClub() && !$('lb-scope').dataset.gekozen) {
+        lbScope = 'club';
+        $('lb-scope').querySelectorAll('.tab').forEach(function (t) {
+          t.classList.toggle('on', t.dataset.scope === 'club');
+        });
+      }
+      if (lbScope === 'club') pingNu().then(function () { laadClub(true); });
+      renderBoardList();
+      lbTimer = setInterval(renderBoardList, 1000);
+    }
   }
   function close() {
     if (!P.naam && $('ov-hallo').classList.contains('on')) { $('hallo-naam').focus(); return; }
@@ -695,7 +782,74 @@
     var d = Math.floor(h / 24);
     return d === 1 ? 'gisteren' : d + ' dagen geleden';
   }
+  /* De clublijst komt van de server; niet elke seconde opnieuw ophalen. */
+  function laadClub(force) {
+    if (!heeftClub()) return;
+    var nu = Date.now();
+    if (!force && nu - online.geladen < 15000) return;
+    online.geladen = nu; online.bezig = true; online.fout = '';
+    Promise.all([Online.top(S.club, lbSort), Online.wieNu(S.club)])
+      .then(function (r) {
+        online.lijst = r[0] || [];
+        online.aanwezig = (r[1] || []).filter(function (w) { return w.speler_id !== P.id; });
+        online.bezig = false; renderBoardList();
+      })
+      .catch(function (e) {
+        online.bezig = false; online.fout = 'Geen verbinding met de club.';
+        renderBoardList();
+      });
+  }
+
+  function renderClubLijst() {
+    var tb = $('lb-body'), regel = $('lb-online');
+    if (!heeftClub()) {
+      regel.textContent = '';
+      tb.innerHTML = '<tr><td class="empty" colspan="6">Je zit nog niet in een club.<br>' +
+        'Maak er een in <b>Mijn menu</b> en deel de code — dan spelen jullie in dezelfde lijst.</td></tr>';
+      $('lb-note').textContent = 'Alleen wie jullie code heeft, ziet deze lijst.';
+      return;
+    }
+    var wie = online.aanwezig || [];
+    if (wie.length) {
+      var spelend = wie.filter(function (w) { return w.bezig; }).length;
+      regel.innerHTML = '<span class="stip"></span>Nu online: <b>' +
+        wie.map(function (w) { return esc(w.naam); }).join(', ') + '</b>' +
+        (spelend ? ' — ' + spelend + ' aan het spelen' : '');
+    } else {
+      regel.textContent = online.bezig ? 'Even kijken wie er zijn…' : 'Nu niemand anders online.';
+    }
+    var lijst = online.lijst || [];
+    if (online.fout) {
+      tb.innerHTML = '<tr><td class="empty" colspan="6">' + online.fout + '<br>Je eigen tijden staan er nog gewoon.</td></tr>';
+    } else if (!lijst.length) {
+      tb.innerHTML = '<tr><td class="empty" colspan="6">' + (online.bezig ? 'Bezig met ophalen…' :
+        'Nog geen tijden in deze club. Win een potje en jij staat als eerste.') + '</td></tr>';
+    } else {
+      var html = '<tr class="head"><td class="pos">#</td><td class="av"></td><td class="nm">Speler</td>' +
+        '<td class="num">Tijd</td><td class="num">Zetten</td><td class="num">Score</td></tr>';
+      lijst.slice(0, 60).forEach(function (r, i) {
+        var ik = r.speler_id === P.id;
+        var av = (ik && P.foto)
+          ? '<span class="avatar rij heeft" style="background-image:url(' + P.foto + ')"></span>'
+          : '<span class="avatar rij" style="background:' + kleurVan(r.naam) + '">' + esc(initialen(r.naam)) + '</span>';
+        var sub = (Store.LEVELS[r.niveau] ? Store.LEVELS[r.niveau].icon : '') + ' trede ' + (r.trede || 1) +
+          ' · #' + r.spel + ' · ' + ago(new Date(r.gemaakt_op).getTime());
+        html += '<tr class="' + (i === 0 ? 'top1 ' : '') + (ik ? 'me' : '') + '">' +
+          '<td class="pos">' + (i + 1) + '</td><td class="av">' + av + '</td>' +
+          '<td class="nm">' + esc(r.naam) + '<i>' + sub + '</i></td>' +
+          '<td class="num">' + fmt(r.tijd_ms) + '</td>' +
+          '<td class="num">' + r.zetten + '</td>' +
+          '<td class="num">' + r.score + '</td></tr>';
+      });
+      tb.innerHTML = html;
+    }
+    $('lb-note').textContent = 'Club ' + S.club + (S.clubNaam ? ' · ' + S.clubNaam : '') +
+      ' · alleen wie de code heeft ziet deze lijst.';
+  }
+
   function renderBoardList() {
+    if (lbScope === 'club') { laadClub(false); renderClubLijst(); return; }
+    $('lb-online').textContent = '';
     var ctx = { level: cfg.level, deal: st.deal };
     var list = Store.filtered(lbScope, ctx).slice();
     var live = null;
@@ -740,12 +894,15 @@
     var b = e.target.closest('.tab'); if (!b) return;
     lbSort = b.dataset.sort;
     this.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('on', t === b); });
+    if (lbScope === 'club') laadClub(true);
     renderBoardList();
   });
   $('lb-scope').addEventListener('click', function (e) {
     var b = e.target.closest('.tab'); if (!b) return;
     lbScope = b.dataset.scope;
+    this.dataset.gekozen = '1';
     this.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('on', t === b); });
+    if (lbScope === 'club') laadClub(true);
     renderBoardList();
   });
 
@@ -771,6 +928,7 @@
     $('set-name').value = P.naam || '';
     $('set-tekst').value = P.tekst || '';
     zetAvatar($('set-avatar'), naam(), P.foto, true);
+    toonClub();
     $('set-thema').innerHTML = THEMAS.map(function (t) {
       return '<button class="chip' + ((S.thema || 'auto') === t[0] ? ' on' : '') + '" data-thema="' + t[0] + '">' +
         t[1] + '</button>';
@@ -1110,6 +1268,8 @@
   sizeBoard();
   toonIk();
   cfg = Store.currentConfig();
+  var clubUitUrl = (/[?&#]club=([A-Za-z0-9]{6})/.exec(location.search + location.hash) || [])[1];
+  if (clubUitUrl && !S.club) setTimeout(function () { doeMee(clubUitUrl, true); }, 1200);
   var uitdaging = dealFromUrl();
   if (uitdaging) {
     newGame(uitdaging, false);

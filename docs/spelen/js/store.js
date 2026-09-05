@@ -3,7 +3,7 @@
    ============================================================ */
 var Store = (function () {
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.0';
 
   function load(key, def) {
     try {
@@ -21,6 +21,7 @@ var Store = (function () {
     name: '', bg: 'felt', deck: 'classic', letters: 'jqk',
     autoplay: true, sound: true, anim: true, lefty: false,
     thema: 'auto',            // auto volgt de telefoon; anders 'licht' of 'donker'
+    club: '', clubNaam: '', clubDelen: true,
     level: 'beginner'
   });
 

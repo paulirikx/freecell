@@ -1,7 +1,7 @@
 {
   "name": "freecell",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "FreeCell-patience met tijdrace, ranglijst en oplopende moeilijkheid.",
   "type": "module",
   "scripts": {

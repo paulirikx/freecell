@@ -10,6 +10,7 @@ var BESTANDEN = [
   './js/deal.js',
   './js/engine.js',
   './js/store.js',
+  './js/online.js',
   './js/ui.js',
   './manifest.webmanifest',
   './versie.json',

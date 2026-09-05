@@ -127,6 +127,31 @@
     <div class="chips" id="set-thema"></div>
     <p class="fineprint">Bij "Volg mijn telefoon" wisselt het spel mee met de stand van je toestel.</p>
 
+    <h3>Samen spelen</h3>
+    <div id="club-uit">
+      <p class="hintline">Maak een club en deel de code (of de uitnodigingslink) met wie je wilt. Alleen wie die
+        heeft, ziet jullie gezamenlijke ranglijst en wie er op dat moment speelt.</p>
+      <div class="btnrow">
+        <button class="btn primary small2" id="club-maak">Club maken</button>
+      </div>
+      <div class="btnrow">
+        <input id="club-code" maxlength="6" placeholder="Code van een vriend" autocapitalize="characters" autocomplete="off">
+        <button class="btn small2" id="club-mee">Meedoen</button>
+      </div>
+    </div>
+    <div id="club-aan" style="display:none">
+      <div class="clubkaart">
+        <span class="clublabel">Jullie code</span>
+        <b id="club-toon">------</b>
+        <span class="clubnaam" id="club-naam"></span>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary small2" id="club-deel">Uitnodiging delen</button>
+        <button class="btn small2" id="club-weg">Verlaten</button>
+      </div>
+      <label class="row toggle"><span>Mijn tijden delen met de club</span><input type="checkbox" id="club-delen"></label>
+    </div>
+
     <h3>Snel naar</h3>
     <div class="btnrow">
       <button class="btn" id="ik-ranglijst">Ranglijst</button>
@@ -201,11 +226,13 @@
       <button class="tab" data-sort="score">Score</button>
     </div>
     <div class="tabs sub" id="lb-scope">
+      <button class="tab" data-scope="club">Vrienden</button>
       <button class="tab on" data-scope="level">Mijn niveau</button>
       <button class="tab" data-scope="all">Alles</button>
       <button class="tab" data-scope="deal">Dit spel</button>
       <button class="tab" data-scope="daily">Dagpuzzel</button>
     </div>
+    <p id="lb-online" class="online"></p>
     <div class="lb-wrap"><table class="lb"><tbody id="lb-body"></tbody></table></div>
     <p class="fineprint" id="lb-note"></p>
   </div>
@@ -253,6 +280,7 @@
 <script src="js/deal.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/store.js"></script>
+<script src="js/online.js"></script>
 <script src="js/ui.js"></script>
 </body>
 </html>
