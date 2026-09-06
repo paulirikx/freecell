@@ -4,6 +4,21 @@ Versienummer staat in `package.json` en wordt bij het bouwen overal ingevuld:
 in de app (versionName/versionCode), op de landingspagina en in de naam van de
 service-worker-cache.
 
+## 1.5.0 — 6 september 2026
+
+- Nieuw niveau **Dummies**, onder Beginner: de allermakkelijkste spellen, alle
+  tijd, en de lamp legt niet alleen uit wat je kunt doen maar zet die ene kaart
+  meteen op de goede plek. De rest doe je zelf.
+- Samen spelen is duidelijker: één iemand maakt de club, de rest vult die code
+  in. Zat je al in een club en krijg je een uitnodiging? Dan vraagt het spel of
+  je wilt overstappen, in plaats van de link te negeren.
+- Je kunt nu ook overstappen naar een andere club zonder eerst te vertrekken.
+- Het spel meldt het als iemand uit je club jouw tijd op hetzelfde spel heeft
+  verbeterd.
+- De dagpuzzel houdt bij hoeveel dagen op rij je hem haalt, met een doel bij
+  drie dagen.
+- De telefoon trilt kort bij winst en bij een zet die niet kan (uit te zetten).
+
 ## 1.4.2 — 5 september 2026
 
 - Een foto toevoegen gaat nu in een groot scherm: schuif de foto op zijn plek,

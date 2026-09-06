@@ -222,6 +222,10 @@
       o.stop(actx.currentTime + (dur || 0.08));
     } catch (e) {}
   }
+  function tril(patroon) {
+    if (!S.trillen || !navigator.vibrate) return;
+    try { navigator.vibrate(patroon); } catch (e) {}
+  }
   var sfx = {
     move: function () { beep(320, 0.05, 'triangle', 0.04); },
     place: function () { beep(660, 0.07, 'sine', 0.05); },
@@ -466,6 +470,13 @@
     var m = Eng.bestMove(st, null);
     if (!m) { sfx.bad(); toast('Geen zet gevonden'); return; }
     used.hints++; st.hints = used.hints;
+    // Op Dummies wijst het spel niet aan, maar legt het die ene kaart zelf
+    // goed. De rest doe je nog steeds zelf.
+    if (cfg.hulp) {
+      doMove(m.src, m.dst);
+      toast('Deze heb ik even voor je gedaan');
+      return;
+    }
     showHint(m); updateHUD();
   }
   function showHint(m) {
@@ -566,7 +577,7 @@
         var parts = p.dataset.pile.split(':');
         if (doMove(d.src, { kind: parts[0], i: +parts[1] })) return;
       }
-      sfx.bad();
+      sfx.bad(); tril(30);
       render(true);
       return;
     }
@@ -643,7 +654,8 @@
     pauseTimer();
     var ms = elapsed(), sec = Math.round(ms / 1000);
     lastWin = { ms: ms, moves: st.moves };
-    var mult = cfg.level === 'pro' ? 1.8 : cfg.level === 'gevorderd' ? 1.35 : 1;
+    var mult = cfg.level === 'pro' ? 1.8 : cfg.level === 'gevorderd' ? 1.35 :
+               cfg.level === 'dummies' ? 0.8 : 1;
     mult *= (1 + 0.05 * (cfg.rung - 1));
     var total = Math.round((130 + Math.max(0, 600 - sec) * 2 + Math.max(0, 200 - st.moves) * 5) * mult);
     st.score = total;
@@ -668,7 +680,12 @@
     if (st.moves <= 120 && Store.unlock('lean')) newly.push('lean');
     if (used.hints === 0 && used.undos === 0 && Store.unlock('clean')) newly.push('clean');
     if (Store.stats.streak >= 3 && Store.unlock('streak3')) newly.push('streak3');
-    if (isDaily && Store.unlock('daily')) newly.push('daily');
+    if (isDaily) {
+      var reeks = Store.recordDagpuzzel();
+      if (Store.unlock('daily')) newly.push('daily');
+      if (reeks >= 3 && Store.unlock('daily3')) newly.push('daily3');
+      if (reeks > 1) toast('Dagpuzzel: ' + reeks + ' dagen op rij!');
+    }
     if (cfg.cells <= 3 && Store.unlock('cells3')) newly.push('cells3');
     if (Store.ladder.pro >= 5 && Store.unlock('pro5')) newly.push('pro5');
     if (Store.stats.won >= 10 && Store.unlock('ten')) newly.push('ten');
@@ -690,7 +707,7 @@
     $('win-ladder').textContent = lad;
     $('win-namerow').style.display = 'none';
     localStorage.removeItem('fc.game');
-    sfx.win(); confetti();
+    sfx.win(); tril([60, 60, 60, 60, 160]); confetti();
     open('ov-win');
     updateHUD();
   }
@@ -792,6 +809,8 @@
   }
   $('club-mee').onclick = function () { doeMee($('club-code').value); };
   $('club-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doeMee(this.value); });
+  $('club-mee2').onclick = function () { doeMee($('club-code2').value); };
+  $('club-code2').addEventListener('keydown', function (e) { if (e.key === 'Enter') doeMee(this.value); });
 
   $('club-weg').onclick = function () {
     S.club = ''; S.clubNaam = ''; Store.saveSettings(); toonClub();
@@ -906,6 +925,7 @@
     Promise.all([Online.top(S.club, lbSort), Online.wieNu(S.club)])
       .then(function (r) {
         online.lijst = r[0] || [];
+        meldInhaal(online.lijst);
         online.aanwezig = (r[1] || []).filter(function (w) { return w.speler_id !== P.id; });
         online.bezig = false; renderBoardList();
       })
@@ -913,6 +933,29 @@
         online.bezig = false; online.fout = 'Geen verbinding met de club.';
         renderBoardList();
       });
+  }
+
+  /* Heeft iemand jouw tijd op een spel dat jij ook speelde verbeterd?
+     Dat is precies het duwtje om nog een potje te doen. */
+  function meldInhaal(lijst) {
+    var gezien = S.clubGezien || 0, mijn = {}, i, r;
+    for (i = 0; i < lijst.length; i++) {
+      r = lijst[i];
+      if (r.speler_id === P.id && (!mijn[r.spel] || r.tijd_ms < mijn[r.spel])) mijn[r.spel] = r.tijd_ms;
+    }
+    var beste = null;
+    for (i = 0; i < lijst.length; i++) {
+      r = lijst[i];
+      if (r.speler_id === P.id) continue;
+      if (new Date(r.gemaakt_op).getTime() <= gezien) continue;
+      if (!mijn[r.spel] || r.tijd_ms >= mijn[r.spel]) continue;
+      if (!beste || r.tijd_ms < beste.tijd_ms) beste = r;
+    }
+    S.clubGezien = Date.now(); Store.saveSettings();
+    if (beste) {
+      toast(beste.naam + ' deed spel #' + beste.spel + ' in ' + fmt(beste.tijd_ms) + ' — sneller dan jij');
+      tril([40, 80, 40]);
+    }
   }
 
   function renderClubLijst() {
@@ -1073,6 +1116,7 @@
     $('set-sound').checked = S.sound;
     $('set-anim').checked = S.anim;
     $('set-lefty').checked = S.lefty;
+    $('set-trillen').checked = S.trillen !== false;
     var t = Store.stats;
     $('stats-box').innerHTML =
       '<span>Gespeeld</span><b>' + t.played + '</b>' +
@@ -1080,7 +1124,8 @@
       '<span>Reeks nu</span><b>' + t.streak + '</b>' +
       '<span>Beste reeks</span><b>' + t.bestStreak + '</b>' +
       '<span>Snelste</span><b>' + (t.bestMs ? fmt(t.bestMs) : '–') + '</b>' +
-      '<span>Minste zetten</span><b>' + (t.bestMoves || '–') + '</b>';
+      '<span>Minste zetten</span><b>' + (t.bestMoves || '–') + '</b>' +
+      '<span>Dagpuzzel op rij</span><b>' + (t.dagReeks || 0) + (t.dagBeste ? ' (best ' + t.dagBeste + ')' : '') + '</b>';
     $('ver').textContent = Store.VERSION;
     updateInstallBox();
   }
@@ -1133,7 +1178,7 @@
   $('btn-foto').onclick = function () { kiesFoto(profielGewijzigd); };
   $('btn-foto-weg').onclick = function () { P.foto = ''; profielGewijzigd(); toast('Foto weggehaald'); };
   $('pill-ik').onclick = function () { renderIk(); open('ov-ik'); };
-  ['autoplay', 'sound', 'anim', 'lefty'].forEach(function (k) {
+  ['autoplay', 'sound', 'anim', 'lefty', 'trillen'].forEach(function (k) {
     $('set-' + k).addEventListener('change', function () {
       S[k] = this.checked; Store.saveSettings(); applyLook();
       if (k === 'autoplay' && this.checked) afterMove();
@@ -1147,7 +1192,7 @@
 
   /* ---- nieuw-spel scherm ---- */
   function renderLadderUI() {
-    var keys = ['beginner', 'gevorderd', 'pro'];
+    var keys = ['dummies', 'beginner', 'gevorderd', 'pro'];
     $('set-level').innerHTML = keys.map(function (k) {
       var L = Store.LEVELS[k];
       return '<button class="lvl' + (S.level === k ? ' on' : '') + '" data-lvl="' + k + '">' +
@@ -1157,7 +1202,7 @@
     $('ladder-title').textContent = 'Trede ' + c.rung + ' van ' + c.rungs;
     $('ladder-sub').textContent = 'zwaarte ' + Math.round(c.pct * 100) + '%';
     $('ladder-fill').style.width = (c.rung / c.rungs * 100) + '%';
-    $('ladder-desc').textContent =
+    $('ladder-desc').textContent = (c.hulp ? 'De lamp legt een kaart meteen goed · ' : '') +
       c.cells + ' vrije cellen · ' + (c.hints >= 99 ? 'onbeperkt hints' : c.hints + ' hint' + (c.hints === 1 ? '' : 's')) +
       ' · ' + (c.undos >= 99 ? 'onbeperkt terugdraaien' : c.undos + 'x terugdraaien') +
       ' · streeftijd ' + fmt(c.target * 1000) +
@@ -1398,7 +1443,27 @@
   toonIk();
   cfg = Store.currentConfig();
   var clubUitUrl = (/[?&#]club=([A-Za-z0-9]{6})/.exec(location.search + location.hash) || [])[1];
-  if (clubUitUrl && !S.club) setTimeout(function () { doeMee(clubUitUrl, true); }, 1200);
+  if (clubUitUrl) {
+    var nieuw = clubUitUrl.toUpperCase();
+    if (!S.club) {
+      setTimeout(function () { doeMee(nieuw, true); }, 1200);
+    } else if (nieuw !== S.club) {
+      // Wel een club, maar iemand stuurt een andere uitnodiging: vragen, niet
+      // negeren. Precies hier liepen de eerste twee clubs uit elkaar.
+      setTimeout(function () {
+        Online.zoekClub(nieuw).then(function (c) {
+          if (!c) return;
+          var NL = String.fromCharCode(10);   // geen escapes: dit bestand wordt geknipt en geplakt
+          var ja = confirm('Je zit nu in club ' + (S.clubNaam || S.club) + ' (' + S.club + ').' + NL + NL +
+            'Overstappen naar ' + (c.naam || c.code) + ' (' + c.code + ')?' + NL +
+            'Je eigen tijden blijven gewoon staan.');
+          if (!ja) return;
+          S.club = c.code; S.clubNaam = c.naam; Store.saveSettings(); toonClub(); pingNu();
+          toast('Je speelt nu mee met ' + (c.naam || c.code));
+        }).catch(function () {});
+      }, 1200);
+    }
+  }
   var uitdaging = dealFromUrl();
   if (uitdaging) {
     newGame(uitdaging, false);

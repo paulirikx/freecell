@@ -193,7 +193,8 @@ input[type=checkbox]:checked::after{left:22px}
 .lb .av{width:38px;padding-right:0}
 
 /* niveaus */
-.levels{display:flex;gap:8px}
+.levels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:520px){.levels{grid-template-columns:repeat(4,1fr)}}
 .lvl{flex:1;border:1px solid var(--rand);background:var(--paneel2);border-radius:14px;padding:10px 8px;
   color:#fff;cursor:pointer;text-align:center;font-family:inherit}
 .lvl b{display:block;font-size:14px;margin-bottom:2px}

@@ -19,15 +19,16 @@ var Store = (function () {
 
   var settings = load('fc.settings', {
     name: '', bg: 'felt', deck: 'classic', letters: 'jqk',
-    autoplay: true, sound: true, anim: true, lefty: false,
+    autoplay: true, sound: true, anim: true, lefty: false, trillen: true, clubGezien: 0,
     thema: 'auto',            // auto volgt de telefoon; anders 'licht' of 'donker'
     club: '', clubNaam: '', clubDelen: true,
     level: 'beginner'
   });
 
-  var ladder = load('fc.ladder', { beginner: 1, gevorderd: 1, pro: 1 });
+  var ladder = load('fc.ladder', { dummies: 1, beginner: 1, gevorderd: 1, pro: 1 });
   var stats = load('fc.stats', {
-    played: 0, won: 0, streak: 0, bestStreak: 0, bestMs: null, bestMoves: null, totalMs: 0
+    played: 0, won: 0, streak: 0, bestStreak: 0, bestMs: null, bestMoves: null, totalMs: 0,
+    dagReeks: 0, dagBeste: 0, dagLaatste: ''
   });
   var scores = [];
   try { scores = JSON.parse(localStorage.getItem('fc.scores') || '[]') || []; } catch (e) { scores = []; }
@@ -43,6 +44,11 @@ var Store = (function () {
 
   /* ---------- niveaus ---------- */
   var LEVELS = {
+    dummies: {
+      key: 'dummies', name: 'Dummies', icon: '🐣',
+      blurb: 'De makkelijkste spellen, alle hulp aan, alle tijd',
+      rungs: 6, pct: [0.00, 0.10], base: 900
+    },
     beginner: {
       key: 'beginner', name: 'Beginner', icon: '🌱',
       blurb: 'Rustige deals, 4 cellen, onbeperkt hints',
@@ -79,7 +85,10 @@ var Store = (function () {
     return {
       level: levelKey, levelName: L.name, rung: r, rungs: L.rungs,
       pct: pct, cells: cells, hints: hints, undos: undos,
-      target: Math.round(L.base * (1 - 0.035 * (r - 1)))
+      // Op Dummies wijst het spel aan welke kaarten je kunt verplaatsen en
+      // geeft het vanzelf een zetje als je even niets doet.
+      hulp: levelKey === 'dummies',
+      target: Math.round(L.base * (1 - 0.02 * (r - 1)))
     };
   }
 
@@ -135,6 +144,19 @@ var Store = (function () {
   }
   function recordLoss() { stats.streak = 0; save('fc.stats', stats); }
 
+  /* Dagpuzzel gewonnen: hoeveel dagen op rij lukt dat? */
+  function recordDagpuzzel(datum) {
+    var d = datum || new Date();
+    var vandaag = d.toISOString().slice(0, 10);
+    if (stats.dagLaatste === vandaag) return stats.dagReeks;
+    var gisteren = new Date(d.getTime() - 86400000).toISOString().slice(0, 10);
+    stats.dagReeks = (stats.dagLaatste === gisteren) ? stats.dagReeks + 1 : 1;
+    stats.dagLaatste = vandaag;
+    if (stats.dagReeks > (stats.dagBeste || 0)) stats.dagBeste = stats.dagReeks;
+    save('fc.stats', stats);
+    return stats.dagReeks;
+  }
+
   /* ---------- doelen ---------- */
   var GOALS = [
     { id: 'first', ico: '🏁', t: 'Eerste winst', d: 'Speel je eerste potje uit' },
@@ -144,6 +166,7 @@ var Store = (function () {
     { id: 'clean', ico: '🧼', t: 'Zonder hulp', d: 'Win zonder hint en zonder terugdraaien' },
     { id: 'streak3', ico: '🔥', t: 'Hattrick', d: '3 keer op rij winnen' },
     { id: 'daily', ico: '📅', t: 'Dagpuzzel', d: 'Win de puzzel van vandaag' },
+    { id: 'daily3', ico: '🔁', t: 'Drie dagen op rij', d: 'Win de dagpuzzel drie dagen achter elkaar' },
     { id: 'cells3', ico: '🧱', t: 'Krap behuisd', d: 'Win met 3 vrije cellen of minder' },
     { id: 'pro5', ico: '⚔️', t: 'Pro trede 5', d: 'Bereik trede 5 op Pro' },
     { id: 'top', ico: '👑', t: 'Bovenaan', d: 'Sta nummer 1 op de tijdlijst van je niveau' },
@@ -163,7 +186,7 @@ var Store = (function () {
     save('fc.stats', stats);
     for (var k in goals) delete goals[k];   // hetzelfde object leegmaken: de export wijst ernaar
     save('fc.goals', goals);
-    ladder = { beginner: 1, gevorderd: 1, pro: 1 }; save('fc.ladder', ladder);
+    ladder = { dummies: 1, beginner: 1, gevorderd: 1, pro: 1 }; save('fc.ladder', ladder);
   }
 
   return {
@@ -177,6 +200,7 @@ var Store = (function () {
     rungConfig: rungConfig, currentConfig: currentConfig, bumpLadder: bumpLadder,
     addScore: addScore, filtered: filtered, sortBy: sortBy,
     recordStart: recordStart, recordWin: recordWin, recordLoss: recordLoss,
+    recordDagpuzzel: recordDagpuzzel,
     unlock: unlock, resetAll: resetAll
   };
 })();

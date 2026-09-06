@@ -74,6 +74,7 @@
     <label class="row toggle"><span>Azen automatisch afleggen</span><input type="checkbox" id="set-autoplay"></label>
     <label class="row toggle"><span>Geluid</span><input type="checkbox" id="set-sound"></label>
     <label class="row toggle"><span>Animaties</span><input type="checkbox" id="set-anim"></label>
+    <label class="row toggle"><span>Trillen</span><input type="checkbox" id="set-trillen"></label>
     <label class="row toggle"><span>Linkshandig (cellen rechts)</span><input type="checkbox" id="set-lefty"></label>
 
     <h3>Op je telefoon</h3>
@@ -158,14 +159,16 @@
 
     <h3>Samen spelen</h3>
     <div id="club-uit">
-      <p class="hintline">Maak een club en deel de code (of de uitnodigingslink) met wie je wilt. Alleen wie die
-        heeft, ziet jullie gezamenlijke ranglijst en wie er op dat moment speelt.</p>
+      <p class="hintline"><b>Eén iemand maakt de club</b>, de rest vult die ene code in. Maken jullie allebei een
+        club, dan zit je in twee aparte lijstjes en zie je elkaar niet.</p>
+      <p class="hintline" style="margin-top:10px"><b>Heb je een code gekregen?</b></p>
       <div class="btnrow">
-        <button class="btn primary small2" id="club-maak">Club maken</button>
+        <input id="club-code" maxlength="6" placeholder="ABC123" autocapitalize="characters" autocomplete="off">
+        <button class="btn primary small2" id="club-mee">Meedoen</button>
       </div>
+      <p class="hintline" style="margin-top:12px">Nog niemand heeft er een? Dan begin jij:</p>
       <div class="btnrow">
-        <input id="club-code" maxlength="6" placeholder="Code van een vriend" autocapitalize="characters" autocomplete="off">
-        <button class="btn small2" id="club-mee">Meedoen</button>
+        <button class="btn small2" id="club-maak">Nieuwe club maken</button>
       </div>
     </div>
     <div id="club-aan" style="display:none">
@@ -179,6 +182,11 @@
         <button class="btn small2" id="club-weg">Verlaten</button>
       </div>
       <label class="row toggle"><span>Mijn tijden delen met de club</span><input type="checkbox" id="club-delen"></label>
+      <p class="hintline" style="margin-top:6px">Code van iemand anders gekregen? Vul hem hier in, dan stap je over.</p>
+      <div class="btnrow">
+        <input id="club-code2" maxlength="6" placeholder="ABC123" autocapitalize="characters" autocomplete="off">
+        <button class="btn small2" id="club-mee2">Overstappen</button>
+      </div>
     </div>
 
     <h3>Snel naar</h3>
